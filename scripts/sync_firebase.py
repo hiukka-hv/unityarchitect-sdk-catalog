@@ -10,6 +10,7 @@ import os
 import sys
 import tarfile
 import tempfile
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path, PurePosixPath
 from typing import Any, BinaryIO
 from urllib.error import HTTPError, URLError
@@ -18,10 +19,11 @@ from urllib.request import Request, urlopen
 from validate_catalog import (
     DEFAULT_CATALOG,
     DEFAULT_CONFIG,
+    DEFAULT_INSTALLER_CATALOG,
     DEFAULT_SCHEMA,
     ValidationError,
     load_json,
-    resolve_dependencies,
+    make_installer_manifest,
     validate_catalog_data,
     validate_config,
     validate_https_url,
@@ -30,7 +32,7 @@ from validate_catalog import (
 
 MAX_ARCHIVE_BYTES = 512 * 1024 * 1024
 MAX_PACKAGE_JSON_BYTES = 1024 * 1024
-USER_AGENT = "unityarchitect-sdk-catalog/1"
+USER_AGENT = "unityarchitect-sdk-catalog/2"
 
 
 class SyncError(RuntimeError):
@@ -152,45 +154,79 @@ def inspect_archive(path: Path, expected_name: str, version: str) -> dict[str, s
         for name, value in dependencies.items()
     ):
         raise SyncError(f"{expected_name}: dependencies must be a string map")
-    for dependency, dependency_version in dependencies.items():
-        if dependency.startswith("com.google.firebase.") and dependency_version != version:
-            raise SyncError(
-                f"{expected_name}: Firebase dependency {dependency} must use {version}"
-            )
     return dict(dependencies)
+
+
+def _build_package(
+    config: dict[str, Any],
+    package_config: dict[str, Any],
+    version: str,
+    temp_root: Path,
+) -> dict[str, Any]:
+    name = package_config["name"]
+    url = config["archiveUrlTemplate"].format(packageName=name, version=version)
+    allowed_hosts = set(config["allowedHosts"])
+    validate_https_url(url, allowed_hosts, f"archive URL for {name}")
+    archive_path = temp_root / f"{name}-{version}.tgz"
+    sha256 = download_archive(url, archive_path, allowed_hosts)
+    dependencies = inspect_archive(archive_path, name, version)
+    return {
+        **package_config,
+        "version": version,
+        "archiveUrl": url,
+        "sha256": sha256,
+        "dependencies": dependencies,
+    }
 
 
 def build_release(
     config: dict[str, Any], version: str, source: str
 ) -> dict[str, Any]:
-    allowed_hosts = set(config["allowedHosts"])
-    packages: list[dict[str, Any]] = []
     with tempfile.TemporaryDirectory(prefix="firebase-catalog-") as temp_dir:
         temp_root = Path(temp_dir)
-        for package_config in config["trackedPackages"]:
-            name = package_config["name"]
-            url = config["archiveUrlTemplate"].format(
-                packageName=name, version=version
-            )
-            validate_https_url(url, allowed_hosts, f"archive URL for {name}")
-            archive_path = temp_root / f"{name}-{version}.tgz"
-            sha256 = download_archive(url, archive_path, allowed_hosts)
-            dependencies = inspect_archive(archive_path, name, version)
-            expected_dependencies = resolve_dependencies(package_config, version)
-            if dependencies != expected_dependencies:
-                raise SyncError(
-                    f"{name}: archive dependencies {dependencies!r} do not match "
-                    f"configured dependencies {expected_dependencies!r}"
+        tracked = config["trackedPackages"]
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            tracked_entries = list(
+                executor.map(
+                    lambda package: _build_package(config, package, version, temp_root),
+                    tracked,
                 )
-            packages.append(
-                {
-                    "name": name,
-                    "archiveUrl": url,
-                    "sha256": sha256,
-                    "dependencies": dependencies,
-                }
             )
-    return {"source": source, "packages": packages}
+
+        support_entries: list[dict[str, Any]] = []
+        for support in config["supportPackages"]:
+            support_name = support["name"]
+            required_versions = {
+                entry["dependencies"][support_name]
+                for entry in tracked_entries
+                if support_name in entry["dependencies"]
+            }
+            if len(required_versions) != 1:
+                raise SyncError(
+                    f"Expected exactly one required version for {support_name}, "
+                    f"got {sorted(required_versions)}"
+                )
+            support_version = next(iter(required_versions))
+            version_tuple(support_version)
+            support_entries.append(
+                _build_package(config, support, support_version, temp_root)
+            )
+
+    entries = [*support_entries, *tracked_entries]
+    names = {entry["name"] for entry in entries}
+    for entry in entries:
+        unknown = set(entry["dependencies"]) - names
+        if unknown:
+            raise SyncError(
+                f"{entry['name']}: untracked dependencies {sorted(unknown)}"
+            )
+        for dependency, dependency_version in entry["dependencies"].items():
+            target = next(item for item in entries if item["name"] == dependency)
+            if target["version"] != dependency_version:
+                raise SyncError(
+                    f"{entry['name']}: dependency {dependency} version mismatch"
+                )
+    return {"source": source, "packages": entries}
 
 
 def apply_release(
@@ -205,7 +241,13 @@ def apply_release(
     return before != json.dumps(catalog, sort_keys=True)
 
 
-def write_json_atomic(path: Path, value: dict[str, Any]) -> None:
+def write_json_if_changed(path: Path, value: dict[str, Any]) -> bool:
+    rendered = json.dumps(value, indent=2, ensure_ascii=False) + "\n"
+    try:
+        if path.read_text(encoding="utf-8") == rendered:
+            return False
+    except FileNotFoundError:
+        pass
     path.parent.mkdir(parents=True, exist_ok=True)
     descriptor, temporary_name = tempfile.mkstemp(
         prefix=f".{path.name}.", suffix=".tmp", dir=path.parent
@@ -213,11 +255,11 @@ def write_json_atomic(path: Path, value: dict[str, Any]) -> None:
     temporary_path = Path(temporary_name)
     try:
         with os.fdopen(descriptor, "w", encoding="utf-8", newline="\n") as handle:
-            json.dump(value, handle, indent=2, ensure_ascii=False)
-            handle.write("\n")
+            handle.write(rendered)
         os.replace(temporary_path, path)
     finally:
         temporary_path.unlink(missing_ok=True)
+    return True
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -226,8 +268,16 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--catalog", type=Path, default=DEFAULT_CATALOG)
     parser.add_argument("--schema", type=Path, default=DEFAULT_SCHEMA)
     parser.add_argument(
+        "--installer-catalog", type=Path, default=DEFAULT_INSTALLER_CATALOG
+    )
+    parser.add_argument(
         "--version",
         help="Verify a specific stable version instead of querying GitHub latest",
+    )
+    parser.add_argument(
+        "--refresh",
+        action="store_true",
+        help="Re-download and replace the selected release even when it is current",
     )
     return parser.parse_args(argv)
 
@@ -239,7 +289,8 @@ def main(argv: list[str] | None = None) -> int:
         catalog = load_json(args.catalog)
         schema = load_json(args.schema)
         validate_config(config)
-        validate_catalog_data(catalog, config, schema)
+        if not args.refresh:
+            validate_catalog_data(catalog, config, schema)
         if args.version:
             version_tuple(args.version)
             version = args.version
@@ -252,21 +303,23 @@ def main(argv: list[str] | None = None) -> int:
             raise SyncError(
                 f"Discovered version {version} is older than catalog latest {current}"
             )
-        if version == current and version in catalog["releases"]:
-            print(f"Catalog is already current at Firebase {version}")
-            return 0
+        catalog_changed = False
+        if args.refresh or version != current or version not in catalog["releases"]:
+            release = build_release(config, version, source)
+            catalog_changed = apply_release(catalog, version, release)
+            validate_catalog_data(catalog, config, schema)
+            catalog_changed = write_json_if_changed(args.catalog, catalog) or catalog_changed
 
-        release = build_release(config, version, source)
-        changed = apply_release(catalog, version, release)
-        validate_catalog_data(catalog, config, schema)
-        if changed:
-            write_json_atomic(args.catalog, catalog)
+        installer_changed = write_json_if_changed(
+            args.installer_catalog, make_installer_manifest(catalog)
+        )
+        if catalog_changed or installer_changed:
             print(
-                f"Updated latestVersion to Firebase {version}; "
-                f"recommendedVersion remains {catalog['recommendedVersion']}"
+                f"Updated Firebase {version}; recommendedVersion remains "
+                f"{catalog['recommendedVersion']}"
             )
         else:
-            print(f"No catalog changes for Firebase {version}")
+            print(f"Catalog is already current at Firebase {version}")
         return 0
     except (ValidationError, SyncError, OSError) as exc:
         print(f"Firebase sync failed: {exc}", file=sys.stderr)

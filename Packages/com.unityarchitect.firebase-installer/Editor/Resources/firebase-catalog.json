@@ -1,12 +1,10 @@
 {
-  "$schema": "../schemas/firebase-catalog.schema.json",
   "schemaVersion": 1,
-  "provider": "firebase",
   "latestVersion": "13.15.0",
   "recommendedVersion": "13.15.0",
-  "releases": {
-    "13.15.0": {
-      "source": "https://github.com/firebase/firebase-unity-sdk/releases/tag/v13.15.0",
+  "releases": [
+    {
+      "version": "13.15.0",
       "packages": [
         {
           "name": "com.google.external-dependency-manager",
@@ -18,7 +16,7 @@
           "version": "1.2.186",
           "archiveUrl": "https://dl.google.com/games/registry/unity/com.google.external-dependency-manager/com.google.external-dependency-manager-1.2.186.tgz",
           "sha256": "46684b475c2a39844c44c07945b5aee02895c41a9bff97d5cd4b5d9e85e021d8",
-          "dependencies": {}
+          "dependencies": []
         },
         {
           "name": "com.google.firebase.app",
@@ -30,9 +28,12 @@
           "version": "13.15.0",
           "archiveUrl": "https://dl.google.com/games/registry/unity/com.google.firebase.app/com.google.firebase.app-13.15.0.tgz",
           "sha256": "78467db3e3ec706fc3f44d09c659ba51b2eec770e85577254ffeb5ea51fe6090",
-          "dependencies": {
-            "com.google.external-dependency-manager": "1.2.186"
-          }
+          "dependencies": [
+            {
+              "name": "com.google.external-dependency-manager",
+              "version": "1.2.186"
+            }
+          ]
         },
         {
           "name": "com.google.firebase.analytics",
@@ -44,9 +45,12 @@
           "version": "13.15.0",
           "archiveUrl": "https://dl.google.com/games/registry/unity/com.google.firebase.analytics/com.google.firebase.analytics-13.15.0.tgz",
           "sha256": "0ea3cb1c5b8976fd3b579508a7cdf26ab591348980b281d465d44693f1bfe20a",
-          "dependencies": {
-            "com.google.firebase.app": "13.15.0"
-          }
+          "dependencies": [
+            {
+              "name": "com.google.firebase.app",
+              "version": "13.15.0"
+            }
+          ]
         },
         {
           "name": "com.google.firebase.app-check",
@@ -58,9 +62,12 @@
           "version": "13.15.0",
           "archiveUrl": "https://dl.google.com/games/registry/unity/com.google.firebase.app-check/com.google.firebase.app-check-13.15.0.tgz",
           "sha256": "51a989e39bced15d5c07b8705bf8c41dfcd91146877b71d874c7f519654ee841",
-          "dependencies": {
-            "com.google.firebase.app": "13.15.0"
-          }
+          "dependencies": [
+            {
+              "name": "com.google.firebase.app",
+              "version": "13.15.0"
+            }
+          ]
         },
         {
           "name": "com.google.firebase.auth",
@@ -72,9 +79,12 @@
           "version": "13.15.0",
           "archiveUrl": "https://dl.google.com/games/registry/unity/com.google.firebase.auth/com.google.firebase.auth-13.15.0.tgz",
           "sha256": "7724d9849e947de9c889cc265bf9f4308cc8347ca3f5b377bd7c28582fe52d83",
-          "dependencies": {
-            "com.google.firebase.app": "13.15.0"
-          }
+          "dependencies": [
+            {
+              "name": "com.google.firebase.app",
+              "version": "13.15.0"
+            }
+          ]
         },
         {
           "name": "com.google.firebase.database",
@@ -86,9 +96,12 @@
           "version": "13.15.0",
           "archiveUrl": "https://dl.google.com/games/registry/unity/com.google.firebase.database/com.google.firebase.database-13.15.0.tgz",
           "sha256": "b76be8ccca7b3edf54f4f1a299e0526e48855c8482b314c85ed02714b84b5439",
-          "dependencies": {
-            "com.google.firebase.auth": "13.15.0"
-          }
+          "dependencies": [
+            {
+              "name": "com.google.firebase.auth",
+              "version": "13.15.0"
+            }
+          ]
         },
         {
           "name": "com.google.firebase.firestore",
@@ -100,9 +113,12 @@
           "version": "13.15.0",
           "archiveUrl": "https://dl.google.com/games/registry/unity/com.google.firebase.firestore/com.google.firebase.firestore-13.15.0.tgz",
           "sha256": "bf4311bffe4074e33b8192af2835059122f0e2a6c7cbbcb521c5d873288d000d",
-          "dependencies": {
-            "com.google.firebase.app": "13.15.0"
-          }
+          "dependencies": [
+            {
+              "name": "com.google.firebase.app",
+              "version": "13.15.0"
+            }
+          ]
         },
         {
           "name": "com.google.firebase.storage",
@@ -114,9 +130,12 @@
           "version": "13.15.0",
           "archiveUrl": "https://dl.google.com/games/registry/unity/com.google.firebase.storage/com.google.firebase.storage-13.15.0.tgz",
           "sha256": "4466e5c12271f6c0bb867df38c1aeed0c19d4f9d76b71dc50d3abde1dbccf0b3",
-          "dependencies": {
-            "com.google.firebase.auth": "13.15.0"
-          }
+          "dependencies": [
+            {
+              "name": "com.google.firebase.auth",
+              "version": "13.15.0"
+            }
+          ]
         },
         {
           "name": "com.google.firebase.functions",
@@ -128,9 +147,12 @@
           "version": "13.15.0",
           "archiveUrl": "https://dl.google.com/games/registry/unity/com.google.firebase.functions/com.google.firebase.functions-13.15.0.tgz",
           "sha256": "dc5078cc0211c806360e295e7d40e61087b0180369bf65c7a61938a4337ee06f",
-          "dependencies": {
-            "com.google.firebase.app": "13.15.0"
-          }
+          "dependencies": [
+            {
+              "name": "com.google.firebase.app",
+              "version": "13.15.0"
+            }
+          ]
         },
         {
           "name": "com.google.firebase.installations",
@@ -142,9 +164,12 @@
           "version": "13.15.0",
           "archiveUrl": "https://dl.google.com/games/registry/unity/com.google.firebase.installations/com.google.firebase.installations-13.15.0.tgz",
           "sha256": "8908c52f6a030a511d6e27ef0d408ebf04d6d022e2453c4f0e5e962b99b0d720",
-          "dependencies": {
-            "com.google.firebase.app": "13.15.0"
-          }
+          "dependencies": [
+            {
+              "name": "com.google.firebase.app",
+              "version": "13.15.0"
+            }
+          ]
         },
         {
           "name": "com.google.firebase.messaging",
@@ -156,9 +181,12 @@
           "version": "13.15.0",
           "archiveUrl": "https://dl.google.com/games/registry/unity/com.google.firebase.messaging/com.google.firebase.messaging-13.15.0.tgz",
           "sha256": "e91db2786d1c53b9dc4d056156d9bbbdc05c93e08beab8e9c39ee1894fc14fff",
-          "dependencies": {
-            "com.google.firebase.app": "13.15.0"
-          }
+          "dependencies": [
+            {
+              "name": "com.google.firebase.app",
+              "version": "13.15.0"
+            }
+          ]
         },
         {
           "name": "com.google.firebase.remote-config",
@@ -170,9 +198,12 @@
           "version": "13.15.0",
           "archiveUrl": "https://dl.google.com/games/registry/unity/com.google.firebase.remote-config/com.google.firebase.remote-config-13.15.0.tgz",
           "sha256": "dc2ee953846f12cfe261a33d07d10873b804e37bdfebfc1c0f10dfb26b423c00",
-          "dependencies": {
-            "com.google.firebase.app": "13.15.0"
-          }
+          "dependencies": [
+            {
+              "name": "com.google.firebase.app",
+              "version": "13.15.0"
+            }
+          ]
         },
         {
           "name": "com.google.firebase.crashlytics",
@@ -184,9 +215,12 @@
           "version": "13.15.0",
           "archiveUrl": "https://dl.google.com/games/registry/unity/com.google.firebase.crashlytics/com.google.firebase.crashlytics-13.15.0.tgz",
           "sha256": "75ea908481eabcb3ae004ed04179db5f4aefc5668131e27049ea0ff46a206232",
-          "dependencies": {
-            "com.google.firebase.app": "13.15.0"
-          }
+          "dependencies": [
+            {
+              "name": "com.google.firebase.app",
+              "version": "13.15.0"
+            }
+          ]
         },
         {
           "name": "com.google.firebase.firebaseai",
@@ -198,11 +232,14 @@
           "version": "13.15.0",
           "archiveUrl": "https://dl.google.com/games/registry/unity/com.google.firebase.firebaseai/com.google.firebase.firebaseai-13.15.0.tgz",
           "sha256": "aa2f09a8b3a6de190682c3918c6aed176d0e5da73316b30de507fb83f4cfd676",
-          "dependencies": {
-            "com.google.firebase.app": "13.15.0"
-          }
+          "dependencies": [
+            {
+              "name": "com.google.firebase.app",
+              "version": "13.15.0"
+            }
+          ]
         }
       ]
     }
-  }
+  ]
 }

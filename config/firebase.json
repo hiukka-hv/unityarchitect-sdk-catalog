@@ -8,24 +8,120 @@
     "github.com",
     "dl.google.com"
   ],
+  "supportPackages": [
+    {
+      "name": "com.google.external-dependency-manager",
+      "displayName": "External Dependency Manager",
+      "category": "Foundation",
+      "description": "Resolves Android and Apple native dependencies required by Firebase.",
+      "selectable": false,
+      "defaultSelected": false
+    }
+  ],
   "trackedPackages": [
     {
       "name": "com.google.firebase.app",
-      "dependencies": {
-        "com.google.external-dependency-manager": "1.2.186"
-      }
+      "displayName": "Firebase App (Core)",
+      "category": "Foundation",
+      "description": "Required Firebase initialization and shared runtime.",
+      "selectable": false,
+      "defaultSelected": false
     },
     {
       "name": "com.google.firebase.analytics",
-      "dependencies": {
-        "com.google.firebase.app": "{version}"
-      }
+      "displayName": "Analytics",
+      "category": "Analytics",
+      "description": "Measure events, audiences, and user behavior.",
+      "selectable": true,
+      "defaultSelected": true
+    },
+    {
+      "name": "com.google.firebase.app-check",
+      "displayName": "App Check",
+      "category": "Identity & Security",
+      "description": "Protect backend resources from unauthorized clients.",
+      "selectable": true,
+      "defaultSelected": false
+    },
+    {
+      "name": "com.google.firebase.auth",
+      "displayName": "Authentication",
+      "category": "Identity & Security",
+      "description": "Sign users in with Firebase Authentication providers.",
+      "selectable": true,
+      "defaultSelected": false
+    },
+    {
+      "name": "com.google.firebase.database",
+      "displayName": "Realtime Database",
+      "category": "Data",
+      "description": "Synchronize JSON data in realtime.",
+      "selectable": true,
+      "defaultSelected": false
+    },
+    {
+      "name": "com.google.firebase.firestore",
+      "displayName": "Cloud Firestore",
+      "category": "Data",
+      "description": "Store and synchronize scalable document data.",
+      "selectable": true,
+      "defaultSelected": false
+    },
+    {
+      "name": "com.google.firebase.storage",
+      "displayName": "Cloud Storage",
+      "category": "Data",
+      "description": "Upload and download user-generated files.",
+      "selectable": true,
+      "defaultSelected": false
+    },
+    {
+      "name": "com.google.firebase.functions",
+      "displayName": "Cloud Functions",
+      "category": "Backend",
+      "description": "Call HTTPS callable Cloud Functions.",
+      "selectable": true,
+      "defaultSelected": false
+    },
+    {
+      "name": "com.google.firebase.installations",
+      "displayName": "Firebase Installations",
+      "category": "Foundation",
+      "description": "Internal installation identity used by Firebase products.",
+      "selectable": true,
+      "defaultSelected": false
+    },
+    {
+      "name": "com.google.firebase.messaging",
+      "displayName": "Cloud Messaging",
+      "category": "Engagement",
+      "description": "Receive cross-platform push notifications.",
+      "selectable": true,
+      "defaultSelected": false
     },
     {
       "name": "com.google.firebase.remote-config",
-      "dependencies": {
-        "com.google.firebase.app": "{version}"
-      }
+      "displayName": "Remote Config",
+      "category": "Engagement",
+      "description": "Change game behavior and values without an app update.",
+      "selectable": true,
+      "defaultSelected": true
+    },
+    {
+      "name": "com.google.firebase.crashlytics",
+      "displayName": "Crashlytics",
+      "category": "Reliability",
+      "description": "Collect crash reports and diagnostics.",
+      "selectable": true,
+      "defaultSelected": false
+    },
+    {
+      "name": "com.google.firebase.firebaseai",
+      "displayName": "Firebase AI Logic",
+      "category": "AI",
+      "description": "Use Gemini and generative AI models through Firebase.",
+      "selectable": true,
+      "defaultSelected": false
     }
   ]
 }

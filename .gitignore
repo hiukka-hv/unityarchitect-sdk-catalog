@@ -3,6 +3,7 @@ __pycache__/
 .pytest_cache/
 .venv/
 venv/
+GooglePackages/
 *.tgz
 *.tar.gz
 .DS_Store

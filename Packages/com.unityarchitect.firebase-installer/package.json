@@ -1,0 +1,21 @@
+{
+  "name": "com.unityarchitect.firebase-installer",
+  "version": "0.1.0",
+  "displayName": "UnityArchitect Firebase Installer",
+  "description": "Select, verify, and install official Firebase Unity SDK modules from the Unity Editor.",
+  "unity": "2020.1",
+  "author": {
+    "name": "UnityArchitect"
+  },
+  "license": "MIT",
+  "documentationUrl": "https://github.com/hiukka-hv/unityarchitect-sdk-catalog#firebase-upm-installer",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hiukka-hv/unityarchitect-sdk-catalog.git"
+  },
+  "keywords": [
+    "firebase",
+    "installer",
+    "upm"
+  ]
+}

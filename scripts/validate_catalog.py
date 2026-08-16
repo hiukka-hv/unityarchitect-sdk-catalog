@@ -16,9 +16,25 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CONFIG = ROOT / "config" / "firebase.json"
 DEFAULT_CATALOG = ROOT / "catalog" / "firebase.json"
 DEFAULT_SCHEMA = ROOT / "schemas" / "firebase-catalog.schema.json"
+DEFAULT_INSTALLER_CATALOG = (
+    ROOT
+    / "Packages"
+    / "com.unityarchitect.firebase-installer"
+    / "Editor"
+    / "Resources"
+    / "firebase-catalog.json"
+)
 VERSION_RE = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+$")
 PACKAGE_RE = re.compile(r"^[a-z0-9]+(?:[.-][a-z0-9]+)+$")
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+PACKAGE_METADATA_KEYS = {
+    "name",
+    "displayName",
+    "category",
+    "description",
+    "selectable",
+    "defaultSelected",
+}
 
 
 class ValidationError(ValueError):
@@ -51,19 +67,17 @@ def _resolve_ref(root_schema: dict[str, Any], reference: str) -> dict[str, Any]:
 
 
 def _matches_type(value: Any, expected: str) -> bool:
-    if expected == "object":
-        return isinstance(value, dict)
-    if expected == "array":
-        return isinstance(value, list)
-    if expected == "string":
-        return isinstance(value, str)
-    if expected == "integer":
-        return isinstance(value, int) and not isinstance(value, bool)
-    if expected == "boolean":
-        return isinstance(value, bool)
-    if expected == "null":
-        return value is None
-    raise ValidationError(f"Unsupported schema type: {expected}")
+    checks = {
+        "object": lambda item: isinstance(item, dict),
+        "array": lambda item: isinstance(item, list),
+        "string": lambda item: isinstance(item, str),
+        "integer": lambda item: isinstance(item, int) and not isinstance(item, bool),
+        "boolean": lambda item: isinstance(item, bool),
+        "null": lambda item: item is None,
+    }
+    if expected not in checks:
+        raise ValidationError(f"Unsupported schema type: {expected}")
+    return checks[expected](value)
 
 
 def validate_against_schema(
@@ -87,8 +101,6 @@ def validate_against_schema(
         )
     if "const" in schema and value != schema["const"]:
         raise ValidationError(f"{location}: expected constant {schema['const']!r}")
-    if "enum" in schema and value not in schema["enum"]:
-        raise ValidationError(f"{location}: value is not in the allowed enum")
 
     if isinstance(value, str):
         if len(value) < schema.get("minLength", 0):
@@ -100,11 +112,10 @@ def validate_against_schema(
     if isinstance(value, list):
         if len(value) < schema.get("minItems", 0):
             raise ValidationError(f"{location}: array has too few items")
-        item_schema = schema.get("items")
-        if item_schema:
+        if schema.get("items"):
             for index, item in enumerate(value):
                 validate_against_schema(
-                    item, item_schema, root_schema, f"{location}[{index}]"
+                    item, schema["items"], root_schema, f"{location}[{index}]"
                 )
 
     if isinstance(value, dict):
@@ -113,7 +124,6 @@ def validate_against_schema(
         for required in schema.get("required", []):
             if required not in value:
                 raise ValidationError(f"{location}: missing required property {required!r}")
-
         properties = schema.get("properties", {})
         pattern_properties = schema.get("patternProperties", {})
         matched: set[str] = set()
@@ -129,7 +139,6 @@ def validate_against_schema(
                         child, child_schema, root_schema, f"{location}.{key}"
                     )
                     matched.add(key)
-
         additional = schema.get("additionalProperties", True)
         for key in value.keys() - matched:
             if additional is False:
@@ -156,20 +165,8 @@ def validate_https_url(url: str, allowed_hosts: set[str], location: str) -> None
         raise ValidationError(f"{location}: URL must contain an absolute path")
 
 
-def resolve_dependencies(package_config: dict[str, Any], version: str) -> dict[str, str]:
-    dependencies = package_config.get("dependencies")
-    if not isinstance(dependencies, dict):
-        raise ValidationError(
-            f"Config package {package_config.get('name')!r} dependencies must be an object"
-        )
-    resolved: dict[str, str] = {}
-    for name, dependency_version in dependencies.items():
-        if not isinstance(name, str) or PACKAGE_RE.fullmatch(name) is None:
-            raise ValidationError(f"Invalid dependency package ID in config: {name!r}")
-        if not isinstance(dependency_version, str):
-            raise ValidationError(f"Dependency version for {name} must be a string")
-        resolved[name] = dependency_version.replace("{version}", version)
-    return resolved
+def package_configs(config: dict[str, Any]) -> list[dict[str, Any]]:
+    return [*config["supportPackages"], *config["trackedPackages"]]
 
 
 def validate_config(config: dict[str, Any]) -> None:
@@ -179,6 +176,7 @@ def validate_config(config: dict[str, Any]) -> None:
         "releasePageTemplate",
         "archiveUrlTemplate",
         "allowedHosts",
+        "supportPackages",
         "trackedPackages",
     }
     if set(config) != expected_keys:
@@ -200,27 +198,62 @@ def validate_config(config: dict[str, Any]) -> None:
         template = config[field]
         if not isinstance(template, str):
             raise ValidationError(f"{field} must be a string")
-        sample = template.format(
-            packageName="com.google.firebase.app", version="1.2.3"
+        validate_https_url(
+            template.format(packageName="com.google.firebase.app", version="1.2.3"),
+            allowed_hosts,
+            field,
         )
-        validate_https_url(sample, allowed_hosts, field)
 
-    packages = config["trackedPackages"]
-    if not isinstance(packages, list) or not packages:
+    if not isinstance(config["supportPackages"], list):
+        raise ValidationError("supportPackages must be an array")
+    if not isinstance(config["trackedPackages"], list) or not config["trackedPackages"]:
         raise ValidationError("trackedPackages must be a non-empty array")
     names: list[str] = []
-    for index, package in enumerate(packages):
-        if not isinstance(package, dict) or set(package) != {"name", "dependencies"}:
+    for index, package in enumerate(package_configs(config)):
+        if not isinstance(package, dict) or set(package) != PACKAGE_METADATA_KEYS:
             raise ValidationError(
-                f"trackedPackages[{index}] must contain name and dependencies"
+                f"Package config at index {index} must contain {sorted(PACKAGE_METADATA_KEYS)}"
             )
         name = package["name"]
         if not isinstance(name, str) or PACKAGE_RE.fullmatch(name) is None:
-            raise ValidationError(f"Invalid tracked package ID: {name!r}")
+            raise ValidationError(f"Invalid package ID: {name!r}")
+        for key in ("displayName", "category", "description"):
+            if not isinstance(package[key], str) or not package[key]:
+                raise ValidationError(f"{name}: {key} must be a non-empty string")
+        for key in ("selectable", "defaultSelected"):
+            if not isinstance(package[key], bool):
+                raise ValidationError(f"{name}: {key} must be a boolean")
+        if package["defaultSelected"] and not package["selectable"]:
+            raise ValidationError(f"{name}: a non-selectable package cannot be default selected")
         names.append(name)
-        resolve_dependencies(package, "1.2.3")
     if len(names) != len(set(names)):
-        raise ValidationError("trackedPackages must not contain duplicate package IDs")
+        raise ValidationError("Package config must not contain duplicate package IDs")
+    if config["trackedPackages"][0]["name"] != "com.google.firebase.app":
+        raise ValidationError("Firebase App must be the first tracked package")
+    if any(package["selectable"] for package in config["supportPackages"]):
+        raise ValidationError("Support packages cannot be directly selectable")
+
+
+def make_installer_manifest(catalog: dict[str, Any]) -> dict[str, Any]:
+    releases: list[dict[str, Any]] = []
+    for version, release in catalog["releases"].items():
+        packages: list[dict[str, Any]] = []
+        for package in release["packages"]:
+            installer_package = {
+                key: value for key, value in package.items() if key != "dependencies"
+            }
+            installer_package["dependencies"] = [
+                {"name": name, "version": dependency_version}
+                for name, dependency_version in package["dependencies"].items()
+            ]
+            packages.append(installer_package)
+        releases.append({"version": version, "packages": packages})
+    return {
+        "schemaVersion": catalog["schemaVersion"],
+        "latestVersion": catalog["latestVersion"],
+        "recommendedVersion": catalog["recommendedVersion"],
+        "releases": releases,
+    }
 
 
 def validate_catalog_data(
@@ -230,60 +263,61 @@ def validate_catalog_data(
     validate_against_schema(catalog, schema)
     if catalog["provider"] != config["provider"]:
         raise ValidationError("Catalog provider does not match config provider")
-
     releases = catalog["releases"]
     for pointer in ("latestVersion", "recommendedVersion"):
         if catalog[pointer] not in releases:
             raise ValidationError(f"{pointer} must reference a catalog release")
 
     allowed_hosts = set(config["allowedHosts"])
-    expected_names = [package["name"] for package in config["trackedPackages"]]
-    config_by_name = {
-        package["name"]: package for package in config["trackedPackages"]
-    }
-    for version, release in releases.items():
-        if VERSION_RE.fullmatch(version) is None:
-            raise ValidationError(f"Invalid release version key: {version!r}")
-        expected_source = config["releasePageTemplate"].format(version=version)
+    configs = package_configs(config)
+    expected_names = [package["name"] for package in configs]
+    config_by_name = {package["name"]: package for package in configs}
+    tracked_names = {package["name"] for package in config["trackedPackages"]}
+    for release_version, release in releases.items():
+        expected_source = config["releasePageTemplate"].format(version=release_version)
         if release["source"] != expected_source:
             raise ValidationError(
-                f"releases.{version}.source must be {expected_source}"
+                f"releases.{release_version}.source must be {expected_source}"
             )
-        validate_https_url(
-            release["source"], allowed_hosts, f"releases.{version}.source"
-        )
-        package_names = [package["name"] for package in release["packages"]]
-        if package_names != expected_names:
+        validate_https_url(release["source"], allowed_hosts, "release source")
+        names = [package["name"] for package in release["packages"]]
+        if names != expected_names:
             raise ValidationError(
-                f"releases.{version}.packages must follow trackedPackages order"
+                f"releases.{release_version}.packages must follow config order"
             )
-        if len(package_names) != len(set(package_names)):
-            raise ValidationError(f"releases.{version} contains duplicate packages")
-
+        packages_by_name = {package["name"]: package for package in release["packages"]}
         for package in release["packages"]:
             name = package["name"]
+            metadata = config_by_name[name]
+            for key in PACKAGE_METADATA_KEYS - {"name"}:
+                if package[key] != metadata[key]:
+                    raise ValidationError(f"{name}: {key} does not match config")
+            package_version = package["version"]
+            if name in tracked_names and package_version != release_version:
+                raise ValidationError(
+                    f"{name}: Firebase package version must be {release_version}"
+                )
             expected_url = config["archiveUrlTemplate"].format(
-                packageName=name, version=version
+                packageName=name, version=package_version
             )
             if package["archiveUrl"] != expected_url:
-                raise ValidationError(
-                    f"{name} {version}: archiveUrl must be {expected_url}"
-                )
-            validate_https_url(
-                package["archiveUrl"], allowed_hosts, f"{name} {version}.archiveUrl"
-            )
+                raise ValidationError(f"{name}: archiveUrl must be {expected_url}")
+            validate_https_url(package["archiveUrl"], allowed_hosts, f"{name}.archiveUrl")
             if SHA256_RE.fullmatch(package["sha256"]) is None:
-                raise ValidationError(f"{name} {version}: invalid SHA-256")
-            expected_dependencies = resolve_dependencies(config_by_name[name], version)
-            if package["dependencies"] != expected_dependencies:
-                raise ValidationError(
-                    f"{name} {version}: dependencies do not match config"
-                )
+                raise ValidationError(f"{name}: invalid SHA-256")
             for dependency, dependency_version in package["dependencies"].items():
-                if dependency.startswith("com.google.firebase.") and dependency_version != version:
+                target = packages_by_name.get(dependency)
+                if target is None:
+                    raise ValidationError(f"{name}: untracked dependency {dependency}")
+                if target["version"] != dependency_version:
                     raise ValidationError(
-                        f"{name} {version}: Firebase dependency {dependency} "
-                        f"must use the same version"
+                        f"{name}: dependency {dependency} must use {target['version']}"
+                    )
+                if dependency.startswith("com.google.firebase.") and (
+                    dependency_version != release_version
+                ):
+                    raise ValidationError(
+                        f"{name}: Firebase dependency {dependency} must use {release_version}"
                     )
 
 
@@ -291,10 +325,14 @@ def validate_repository(
     config_path: Path = DEFAULT_CONFIG,
     catalog_path: Path = DEFAULT_CATALOG,
     schema_path: Path = DEFAULT_SCHEMA,
+    installer_catalog_path: Path = DEFAULT_INSTALLER_CATALOG,
 ) -> None:
-    validate_catalog_data(
-        load_json(catalog_path), load_json(config_path), load_json(schema_path)
-    )
+    config = load_json(config_path)
+    catalog = load_json(catalog_path)
+    validate_catalog_data(catalog, config, load_json(schema_path))
+    installer_catalog = load_json(installer_catalog_path)
+    if installer_catalog != make_installer_manifest(catalog):
+        raise ValidationError("Embedded installer catalog is out of date")
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -302,13 +340,18 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
     parser.add_argument("--catalog", type=Path, default=DEFAULT_CATALOG)
     parser.add_argument("--schema", type=Path, default=DEFAULT_SCHEMA)
+    parser.add_argument(
+        "--installer-catalog", type=Path, default=DEFAULT_INSTALLER_CATALOG
+    )
     return parser.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     try:
-        validate_repository(args.config, args.catalog, args.schema)
+        validate_repository(
+            args.config, args.catalog, args.schema, args.installer_catalog
+        )
     except ValidationError as exc:
         print(f"Catalog validation failed: {exc}", file=sys.stderr)
         return 1
