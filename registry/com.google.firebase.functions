@@ -1,0 +1,26 @@
+{
+  "_id": "com.google.firebase.functions",
+  "name": "com.google.firebase.functions",
+  "description": "Call HTTPS callable Cloud Functions.",
+  "dist-tags": {
+    "latest": "13.15.0",
+    "recommended": "13.15.0"
+  },
+  "versions": {
+    "13.15.0": {
+      "_id": "com.google.firebase.functions@13.15.0",
+      "name": "com.google.firebase.functions",
+      "version": "13.15.0",
+      "displayName": "Cloud Functions",
+      "description": "Call HTTPS callable Cloud Functions.",
+      "dependencies": {
+        "com.google.firebase.app": "13.15.0"
+      },
+      "dist": {
+        "tarball": "https://dl.google.com/games/registry/unity/com.google.firebase.functions/com.google.firebase.functions-13.15.0.tgz",
+        "shasum": "8530f7d14f5d5fee6b0a22a4a319a9427c723494",
+        "integrity": "sha512-KoaEWRWTjCZZ9YaLeQB2V5KU3nZZkc2GsU2PGPDiZfjhd298eYmABQcAoDSdvxZz0+9s1GdEoxfRqqpQszSLDw=="
+      }
+    }
+  }
+}

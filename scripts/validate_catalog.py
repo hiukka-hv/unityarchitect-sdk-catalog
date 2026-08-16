@@ -16,6 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CONFIG = ROOT / "config" / "firebase.json"
 DEFAULT_CATALOG = ROOT / "catalog" / "firebase.json"
 DEFAULT_SCHEMA = ROOT / "schemas" / "firebase-catalog.schema.json"
+DEFAULT_REGISTRY = ROOT / "registry"
 DEFAULT_INSTALLER_CATALOG = (
     ROOT
     / "Packages"
@@ -26,7 +27,9 @@ DEFAULT_INSTALLER_CATALOG = (
 )
 VERSION_RE = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+$")
 PACKAGE_RE = re.compile(r"^[a-z0-9]+(?:[.-][a-z0-9]+)+$")
+SHA1_RE = re.compile(r"^[0-9a-f]{40}$")
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+INTEGRITY_RE = re.compile(r"^sha512-[A-Za-z0-9+/]{86}==$")
 PACKAGE_METADATA_KEYS = {
     "name",
     "displayName",
@@ -175,6 +178,9 @@ def validate_config(config: dict[str, Any]) -> None:
         "releaseApiUrl",
         "releasePageTemplate",
         "archiveUrlTemplate",
+        "registryName",
+        "registryUrl",
+        "registryScopes",
         "allowedHosts",
         "supportPackages",
         "trackedPackages",
@@ -194,6 +200,20 @@ def validate_config(config: dict[str, Any]) -> None:
         raise ValidationError("allowedHosts must not contain duplicates")
     allowed_hosts = set(hosts)
     validate_https_url(config["releaseApiUrl"], allowed_hosts, "releaseApiUrl")
+    if not isinstance(config["registryName"], str) or not config["registryName"]:
+        raise ValidationError("registryName must be a non-empty string")
+    registry_url = config["registryUrl"]
+    if not isinstance(registry_url, str):
+        raise ValidationError("registryUrl must be a string")
+    parsed_registry = urlparse(registry_url)
+    validate_https_url(registry_url, {"hiukka-hv.github.io"}, "registryUrl")
+    if parsed_registry.query or parsed_registry.fragment or registry_url.endswith("/"):
+        raise ValidationError(
+            "registryUrl must not contain query, fragment, or trailing slash"
+        )
+    scopes = config["registryScopes"]
+    if scopes != ["com.google.firebase", "com.google.external-dependency-manager"]:
+        raise ValidationError("registryScopes must cover Firebase and EDM")
     for field in ("releasePageTemplate", "archiveUrlTemplate"):
         template = config[field]
         if not isinstance(template, str):
@@ -256,6 +276,80 @@ def make_installer_manifest(catalog: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def make_registry_documents(
+    catalog: dict[str, Any], config: dict[str, Any]
+) -> dict[str, dict[str, Any]]:
+    """Build static npm-compatible metadata documents for Unity Package Manager."""
+    documents: dict[str, dict[str, Any]] = {}
+    package_metadata = {item["name"]: item for item in package_configs(config)}
+
+    def release_package(release_version: str, package_name: str) -> dict[str, Any]:
+        matches = [
+            package
+            for package in catalog["releases"][release_version]["packages"]
+            if package["name"] == package_name
+        ]
+        if len(matches) != 1:
+            raise ValidationError(
+                f"{release_version}: expected one catalog entry for {package_name}"
+            )
+        return matches[0]
+
+    for package_name, metadata in package_metadata.items():
+        versions: dict[str, dict[str, Any]] = {}
+        for release in catalog["releases"].values():
+            package = next(
+                item
+                for item in release["packages"]
+                if item["name"] == package_name
+            )
+            package_version = package["version"]
+            version_document = {
+                "_id": f"{package_name}@{package_version}",
+                "name": package_name,
+                "version": package_version,
+                "displayName": metadata["displayName"],
+                "description": metadata["description"],
+                "dependencies": package["dependencies"],
+                "dist": {
+                    "tarball": package["archiveUrl"],
+                    "shasum": package["sha1"],
+                    "integrity": package["integrity"],
+                },
+            }
+            existing = versions.get(package_version)
+            if existing is not None and existing != version_document:
+                raise ValidationError(
+                    f"{package_name} {package_version}: conflicting registry metadata"
+                )
+            versions[package_version] = version_document
+
+        latest = release_package(catalog["latestVersion"], package_name)["version"]
+        recommended = release_package(
+            catalog["recommendedVersion"], package_name
+        )["version"]
+        documents[package_name] = {
+            "_id": package_name,
+            "name": package_name,
+            "description": metadata["description"],
+            "dist-tags": {"latest": latest, "recommended": recommended},
+            "versions": versions,
+        }
+
+    documents["index.json"] = {
+        "name": config["registryName"],
+        "url": config["registryUrl"],
+        "scopes": config["registryScopes"],
+        "latestFirebaseVersion": catalog["latestVersion"],
+        "recommendedFirebaseVersion": catalog["recommendedVersion"],
+        "packages": [
+            {"name": item["name"], "displayName": item["displayName"]}
+            for item in package_configs(config)
+        ],
+    }
+    return documents
+
+
 def validate_catalog_data(
     catalog: dict[str, Any], config: dict[str, Any], schema: dict[str, Any]
 ) -> None:
@@ -305,6 +399,10 @@ def validate_catalog_data(
             validate_https_url(package["archiveUrl"], allowed_hosts, f"{name}.archiveUrl")
             if SHA256_RE.fullmatch(package["sha256"]) is None:
                 raise ValidationError(f"{name}: invalid SHA-256")
+            if SHA1_RE.fullmatch(package["sha1"]) is None:
+                raise ValidationError(f"{name}: invalid SHA-1")
+            if INTEGRITY_RE.fullmatch(package["integrity"]) is None:
+                raise ValidationError(f"{name}: invalid npm integrity")
             for dependency, dependency_version in package["dependencies"].items():
                 target = packages_by_name.get(dependency)
                 if target is None:
@@ -326,6 +424,7 @@ def validate_repository(
     catalog_path: Path = DEFAULT_CATALOG,
     schema_path: Path = DEFAULT_SCHEMA,
     installer_catalog_path: Path = DEFAULT_INSTALLER_CATALOG,
+    registry_path: Path = DEFAULT_REGISTRY,
 ) -> None:
     config = load_json(config_path)
     catalog = load_json(catalog_path)
@@ -333,6 +432,19 @@ def validate_repository(
     installer_catalog = load_json(installer_catalog_path)
     if installer_catalog != make_installer_manifest(catalog):
         raise ValidationError("Embedded installer catalog is out of date")
+    expected_documents = make_registry_documents(catalog, config)
+    actual_names = {
+        path.name
+        for path in registry_path.iterdir()
+        if path.is_file() and path.name != ".nojekyll"
+    }
+    if actual_names != set(expected_documents):
+        raise ValidationError("Static UPM registry file set is out of date")
+    for name, expected in expected_documents.items():
+        if load_json(registry_path / name) != expected:
+            raise ValidationError(
+                f"Static UPM registry document is out of date: {name}"
+            )
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -343,6 +455,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--installer-catalog", type=Path, default=DEFAULT_INSTALLER_CATALOG
     )
+    parser.add_argument("--registry", type=Path, default=DEFAULT_REGISTRY)
     return parser.parse_args(argv)
 
 
@@ -350,7 +463,11 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     try:
         validate_repository(
-            args.config, args.catalog, args.schema, args.installer_catalog
+            args.config,
+            args.catalog,
+            args.schema,
+            args.installer_catalog,
+            args.registry,
         )
     except ValidationError as exc:
         print(f"Catalog validation failed: {exc}", file=sys.stderr)

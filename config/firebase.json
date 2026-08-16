@@ -3,6 +3,12 @@
   "releaseApiUrl": "https://api.github.com/repos/firebase/firebase-unity-sdk/releases/latest",
   "releasePageTemplate": "https://github.com/firebase/firebase-unity-sdk/releases/tag/v{version}",
   "archiveUrlTemplate": "https://dl.google.com/games/registry/unity/{packageName}/{packageName}-{version}.tgz",
+  "registryName": "UnityArchitect Firebase Registry",
+  "registryUrl": "https://hiukka-hv.github.io/unityarchitect-sdk-catalog",
+  "registryScopes": [
+    "com.google.firebase",
+    "com.google.external-dependency-manager"
+  ],
   "allowedHosts": [
     "api.github.com",
     "github.com",

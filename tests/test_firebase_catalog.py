@@ -117,6 +117,26 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual("0.1.0", descriptor["version"])
         self.assertEqual("2020.1", descriptor["unity"])
 
+    def test_static_registry_exposes_short_version_dependencies(self) -> None:
+        metadata = validate_catalog.load_json(
+            validate_catalog.DEFAULT_REGISTRY / "com.google.firebase.analytics"
+        )
+        self.assertEqual("13.15.0", metadata["dist-tags"]["latest"])
+        package = metadata["versions"]["13.15.0"]
+        self.assertEqual(
+            {"com.google.firebase.app": "13.15.0"}, package["dependencies"]
+        )
+        self.assertEqual(
+            "https://dl.google.com/games/registry/unity/"
+            "com.google.firebase.analytics/"
+            "com.google.firebase.analytics-13.15.0.tgz",
+            package["dist"]["tarball"],
+        )
+        self.assertRegex(package["dist"]["shasum"], r"^[0-9a-f]{40}$")
+        self.assertRegex(
+            package["dist"]["integrity"], r"^sha512-[A-Za-z0-9+/]{86}==$"
+        )
+
 
 class SyncTests(unittest.TestCase):
     def _write_archive(

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
 import json
 import os
@@ -20,10 +21,12 @@ from validate_catalog import (
     DEFAULT_CATALOG,
     DEFAULT_CONFIG,
     DEFAULT_INSTALLER_CATALOG,
+    DEFAULT_REGISTRY,
     DEFAULT_SCHEMA,
     ValidationError,
     load_json,
     make_installer_manifest,
+    make_registry_documents,
     validate_catalog_data,
     validate_config,
     validate_https_url,
@@ -94,8 +97,12 @@ def discover_latest(config: dict[str, Any]) -> tuple[str, str]:
     return version, expected_source
 
 
-def download_archive(url: str, destination: Path, allowed_hosts: set[str]) -> str:
-    digest = hashlib.sha256()
+def download_archive(
+    url: str, destination: Path, allowed_hosts: set[str]
+) -> tuple[str, str, str]:
+    sha1 = hashlib.sha1()
+    sha256 = hashlib.sha256()
+    sha512 = hashlib.sha512()
     total = 0
     with _request(url, allowed_hosts, "application/octet-stream") as response:
         with destination.open("wb") as output:
@@ -106,11 +113,14 @@ def download_archive(url: str, destination: Path, allowed_hosts: set[str]) -> st
                 total += len(chunk)
                 if total > MAX_ARCHIVE_BYTES:
                     raise SyncError(f"Archive exceeds {MAX_ARCHIVE_BYTES} bytes: {url}")
-                digest.update(chunk)
+                sha1.update(chunk)
+                sha256.update(chunk)
+                sha512.update(chunk)
                 output.write(chunk)
     if total == 0:
         raise SyncError(f"Downloaded archive is empty: {url}")
-    return digest.hexdigest()
+    integrity = "sha512-" + base64.b64encode(sha512.digest()).decode("ascii")
+    return sha1.hexdigest(), sha256.hexdigest(), integrity
 
 
 def inspect_archive(path: Path, expected_name: str, version: str) -> dict[str, str]:
@@ -168,13 +178,15 @@ def _build_package(
     allowed_hosts = set(config["allowedHosts"])
     validate_https_url(url, allowed_hosts, f"archive URL for {name}")
     archive_path = temp_root / f"{name}-{version}.tgz"
-    sha256 = download_archive(url, archive_path, allowed_hosts)
+    sha1, sha256, integrity = download_archive(url, archive_path, allowed_hosts)
     dependencies = inspect_archive(archive_path, name, version)
     return {
         **package_config,
         "version": version,
         "archiveUrl": url,
+        "sha1": sha1,
         "sha256": sha256,
+        "integrity": integrity,
         "dependencies": dependencies,
     }
 
@@ -262,6 +274,20 @@ def write_json_if_changed(path: Path, value: dict[str, Any]) -> bool:
     return True
 
 
+def write_registry_documents(
+    directory: Path, documents: dict[str, dict[str, Any]]
+) -> bool:
+    directory.mkdir(parents=True, exist_ok=True)
+    changed = False
+    for name, document in documents.items():
+        changed = write_json_if_changed(directory / name, document) or changed
+    nojekyll = directory / ".nojekyll"
+    if not nojekyll.exists():
+        nojekyll.touch()
+        changed = True
+    return changed
+
+
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
@@ -270,6 +296,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--installer-catalog", type=Path, default=DEFAULT_INSTALLER_CATALOG
     )
+    parser.add_argument("--registry", type=Path, default=DEFAULT_REGISTRY)
     parser.add_argument(
         "--version",
         help="Verify a specific stable version instead of querying GitHub latest",
@@ -313,7 +340,10 @@ def main(argv: list[str] | None = None) -> int:
         installer_changed = write_json_if_changed(
             args.installer_catalog, make_installer_manifest(catalog)
         )
-        if catalog_changed or installer_changed:
+        registry_changed = write_registry_documents(
+            args.registry, make_registry_documents(catalog, config)
+        )
+        if catalog_changed or installer_changed or registry_changed:
             print(
                 f"Updated Firebase {version}; recommendedVersion remains "
                 f"{catalog['recommendedVersion']}"

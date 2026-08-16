@@ -1,0 +1,68 @@
+{
+  "name": "UnityArchitect Firebase Registry",
+  "url": "https://hiukka-hv.github.io/unityarchitect-sdk-catalog",
+  "scopes": [
+    "com.google.firebase",
+    "com.google.external-dependency-manager"
+  ],
+  "latestFirebaseVersion": "13.15.0",
+  "recommendedFirebaseVersion": "13.15.0",
+  "packages": [
+    {
+      "name": "com.google.external-dependency-manager",
+      "displayName": "External Dependency Manager"
+    },
+    {
+      "name": "com.google.firebase.app",
+      "displayName": "Firebase App (Core)"
+    },
+    {
+      "name": "com.google.firebase.analytics",
+      "displayName": "Analytics"
+    },
+    {
+      "name": "com.google.firebase.app-check",
+      "displayName": "App Check"
+    },
+    {
+      "name": "com.google.firebase.auth",
+      "displayName": "Authentication"
+    },
+    {
+      "name": "com.google.firebase.database",
+      "displayName": "Realtime Database"
+    },
+    {
+      "name": "com.google.firebase.firestore",
+      "displayName": "Cloud Firestore"
+    },
+    {
+      "name": "com.google.firebase.storage",
+      "displayName": "Cloud Storage"
+    },
+    {
+      "name": "com.google.firebase.functions",
+      "displayName": "Cloud Functions"
+    },
+    {
+      "name": "com.google.firebase.installations",
+      "displayName": "Firebase Installations"
+    },
+    {
+      "name": "com.google.firebase.messaging",
+      "displayName": "Cloud Messaging"
+    },
+    {
+      "name": "com.google.firebase.remote-config",
+      "displayName": "Remote Config"
+    },
+    {
+      "name": "com.google.firebase.crashlytics",
+      "displayName": "Crashlytics"
+    },
+    {
+      "name": "com.google.firebase.firebaseai",
+      "displayName": "Firebase AI Logic"
+    }
+  ]
+}

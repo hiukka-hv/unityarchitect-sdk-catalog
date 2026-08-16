@@ -68,7 +68,9 @@
         "defaultSelected",
         "version",
         "archiveUrl",
+        "sha1",
         "sha256",
+        "integrity",
         "dependencies"
       ],
       "properties": {
@@ -104,6 +106,14 @@
         "sha256": {
           "type": "string",
           "pattern": "^[0-9a-f]{64}$"
+        },
+        "sha1": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "integrity": {
+          "type": "string",
+          "pattern": "^sha512-[A-Za-z0-9+/]{86}==$"
         },
         "dependencies": {
           "$ref": "#/$defs/dependencyMap"

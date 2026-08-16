@@ -1,0 +1,26 @@
+{
+  "_id": "com.google.firebase.messaging",
+  "name": "com.google.firebase.messaging",
+  "description": "Receive cross-platform push notifications.",
+  "dist-tags": {
+    "latest": "13.15.0",
+    "recommended": "13.15.0"
+  },
+  "versions": {
+    "13.15.0": {
+      "_id": "com.google.firebase.messaging@13.15.0",
+      "name": "com.google.firebase.messaging",
+      "version": "13.15.0",
+      "displayName": "Cloud Messaging",
+      "description": "Receive cross-platform push notifications.",
+      "dependencies": {
+        "com.google.firebase.app": "13.15.0"
+      },
+      "dist": {
+        "tarball": "https://dl.google.com/games/registry/unity/com.google.firebase.messaging/com.google.firebase.messaging-13.15.0.tgz",
+        "shasum": "3fa2cc9f474f6b5779cc291baaab083c95e8b8ee",
+        "integrity": "sha512-KeARogF7RXIF8kJXjT0i6Hv7DpNPpanHFw8DPmoCA8OuosbCjyhlLDvj3bf3TBsERYfp7/p5DgVLsFX7jpWqlg=="
+      }
+    }
+  }
+}

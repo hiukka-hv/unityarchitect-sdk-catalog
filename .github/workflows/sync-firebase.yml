@@ -43,7 +43,8 @@ jobs:
         run: |
           if git diff --quiet -- \
             catalog/firebase.json \
-            Packages/com.unityarchitect.firebase-installer/Editor/Resources/firebase-catalog.json; then
+            Packages/com.unityarchitect.firebase-installer/Editor/Resources/firebase-catalog.json \
+            registry; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
             echo "changed=true" >> "$GITHUB_OUTPUT"
@@ -61,7 +62,8 @@ jobs:
           git switch -C "$branch"
           git add -- \
             catalog/firebase.json \
-            Packages/com.unityarchitect.firebase-installer/Editor/Resources/firebase-catalog.json
+            Packages/com.unityarchitect.firebase-installer/Editor/Resources/firebase-catalog.json \
+            registry
           git commit -m "Update Firebase catalog to $version"
           git fetch origin "$branch" || true
           git push --force-with-lease origin "HEAD:$branch"
