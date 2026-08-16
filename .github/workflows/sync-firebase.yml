@@ -1,0 +1,104 @@
+name: Sync Firebase catalog
+
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: sync-firebase-catalog
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Sync latest stable Firebase release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python scripts/sync_firebase.py
+
+      - name: Validate catalog
+        run: |
+          python scripts/validate_catalog.py
+          python -m unittest discover -s tests -v
+
+      - name: Detect catalog changes
+        id: changes
+        shell: bash
+        run: |
+          if git diff --quiet -- \
+            catalog/firebase.json \
+            Packages/com.unityarchitect.firebase-installer/Editor/Resources/firebase-catalog.json \
+            registry; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Push sync branch
+        if: steps.changes.outputs.changed == 'true'
+        id: push
+        shell: bash
+        run: |
+          version="$(python -c 'import json; print(json.load(open("catalog/firebase.json"))["latestVersion"])')"
+          branch="automation/firebase-catalog-sync"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -C "$branch"
+          git add -- \
+            catalog/firebase.json \
+            Packages/com.unityarchitect.firebase-installer/Editor/Resources/firebase-catalog.json \
+            registry
+          git commit -m "Update Firebase catalog to $version"
+          git fetch origin "$branch" || true
+          git push --force-with-lease origin "HEAD:$branch"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+
+      - name: Open or update pull request
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.push.outputs.version }}
+          BRANCH: ${{ steps.push.outputs.branch }}
+        shell: bash
+        run: |
+          body_file="$(mktemp)"
+          printf '%s\n' \
+            "## Summary" \
+            "" \
+            "- verify Firebase $VERSION archives from Google's official Unity registry" \
+            "- update latestVersion while leaving recommendedVersion unchanged" \
+            "- require manual validation and review before any recommendation change" \
+            "" \
+            "## Validation" \
+            "" \
+            "- python scripts/validate_catalog.py" \
+            "- python -m unittest discover -s tests -v" > "$body_file"
+          pr_number="$(gh pr list --state open --base main --head "$BRANCH" --json number --jq '.[0].number // empty')"
+          if [ -n "$pr_number" ]; then
+            gh pr edit "$pr_number" \
+              --title "Update Firebase catalog to $VERSION" \
+              --body-file "$body_file"
+          else
+            gh pr create \
+              --base main \
+              --head "$BRANCH" \
+              --title "Update Firebase catalog to $VERSION" \
+              --body-file "$body_file"
+          fi

@@ -1,0 +1,24 @@
+{
+  "_id": "com.google.external-dependency-manager",
+  "name": "com.google.external-dependency-manager",
+  "description": "Resolves Android and Apple native dependencies required by Firebase.",
+  "dist-tags": {
+    "latest": "1.2.186",
+    "recommended": "1.2.186"
+  },
+  "versions": {
+    "1.2.186": {
+      "_id": "com.google.external-dependency-manager@1.2.186",
+      "name": "com.google.external-dependency-manager",
+      "version": "1.2.186",
+      "displayName": "External Dependency Manager",
+      "description": "Resolves Android and Apple native dependencies required by Firebase.",
+      "dependencies": {},
+      "dist": {
+        "tarball": "https://dl.google.com/games/registry/unity/com.google.external-dependency-manager/com.google.external-dependency-manager-1.2.186.tgz",
+        "shasum": "8389c4b1c59a6457f6413bd49e9d1cb7c9a7a70e",
+        "integrity": "sha512-eINyP/eyZuLqF35dbg4fq89q3ioKdceYS0u4HTkSWlo8OTExZP3TpC26DF6OwEdVdKQEUVnQVcfC8nPdDFvCUg=="
+      }
+    }
+  }
+}

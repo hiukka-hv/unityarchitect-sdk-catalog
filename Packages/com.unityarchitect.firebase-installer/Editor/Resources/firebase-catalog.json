@@ -1,0 +1,273 @@
+{
+  "schemaVersion": 1,
+  "latestVersion": "13.15.0",
+  "recommendedVersion": "13.15.0",
+  "releases": [
+    {
+      "version": "13.15.0",
+      "packages": [
+        {
+          "name": "com.google.external-dependency-manager",
+          "displayName": "External Dependency Manager",
+          "category": "Foundation",
+          "description": "Resolves Android and Apple native dependencies required by Firebase.",
+          "selectable": false,
+          "defaultSelected": false,
+          "version": "1.2.186",
+          "archiveUrl": "https://dl.google.com/games/registry/unity/com.google.external-dependency-manager/com.google.external-dependency-manager-1.2.186.tgz",
+          "sha1": "8389c4b1c59a6457f6413bd49e9d1cb7c9a7a70e",
+          "sha256": "46684b475c2a39844c44c07945b5aee02895c41a9bff97d5cd4b5d9e85e021d8",
+          "integrity": "sha512-eINyP/eyZuLqF35dbg4fq89q3ioKdceYS0u4HTkSWlo8OTExZP3TpC26DF6OwEdVdKQEUVnQVcfC8nPdDFvCUg==",
+          "dependencies": []
+        },
+        {
+          "name": "com.google.firebase.app",
+          "displayName": "Firebase App (Core)",
+          "category": "Foundation",
+          "description": "Required Firebase initialization and shared runtime.",
+          "selectable": false,
+          "defaultSelected": false,
+          "version": "13.15.0",
+          "archiveUrl": "https://dl.google.com/games/registry/unity/com.google.firebase.app/com.google.firebase.app-13.15.0.tgz",
+          "sha1": "55c692322b3ef8cde2de8e53a62d80cb427cc576",
+          "sha256": "78467db3e3ec706fc3f44d09c659ba51b2eec770e85577254ffeb5ea51fe6090",
+          "integrity": "sha512-9+jzcqSsv3DtKGIMmc0PW/SpuY/MsfrI+A+6qes55ncOCceH5XHrY4Hc5cfqOn36t1bGTjp+nu5jDmzroSRMcg==",
+          "dependencies": [
+            {
+              "name": "com.google.external-dependency-manager",
+              "version": "1.2.186"
+            }
+          ]
+        },
+        {
+          "name": "com.google.firebase.analytics",
+          "displayName": "Analytics",
+          "category": "Analytics",
+          "description": "Measure events, audiences, and user behavior.",
+          "selectable": true,
+          "defaultSelected": true,
+          "version": "13.15.0",
+          "archiveUrl": "https://dl.google.com/games/registry/unity/com.google.firebase.analytics/com.google.firebase.analytics-13.15.0.tgz",
+          "sha1": "cc21622cdf8cf1231f1546831937cb8e78368044",
+          "sha256": "0ea3cb1c5b8976fd3b579508a7cdf26ab591348980b281d465d44693f1bfe20a",
+          "integrity": "sha512-PQoHQL5wvV/LasxqRvNWFSdhogz5D+DfLqaLstYPnlg3iG4OrKtu9NSsrAVNOqmiEhsoduXWmgldVjkSmneh8w==",
+          "dependencies": [
+            {
+              "name": "com.google.firebase.app",
+              "version": "13.15.0"
+            }
+          ]
+        },
+        {
+          "name": "com.google.firebase.app-check",
+          "displayName": "App Check",
+          "category": "Identity & Security",
+          "description": "Protect backend resources from unauthorized clients.",
+          "selectable": true,
+          "defaultSelected": false,
+          "version": "13.15.0",
+          "archiveUrl": "https://dl.google.com/games/registry/unity/com.google.firebase.app-check/com.google.firebase.app-check-13.15.0.tgz",
+          "sha1": "f494c904ffff8a823828bb4f41149a2e1bfb9568",
+          "sha256": "51a989e39bced15d5c07b8705bf8c41dfcd91146877b71d874c7f519654ee841",
+          "integrity": "sha512-PZilnWDAWxH74a0OdNBzqaI81AvIeBJ1FhWcoQiyQ49kil5krPUyV9ODOoOgpWvSlGx5fPfjdxklNdAF5eAMhg==",
+          "dependencies": [
+            {
+              "name": "com.google.firebase.app",
+              "version": "13.15.0"
+            }
+          ]
+        },
+        {
+          "name": "com.google.firebase.auth",
+          "displayName": "Authentication",
+          "category": "Identity & Security",
+          "description": "Sign users in with Firebase Authentication providers.",
+          "selectable": true,
+          "defaultSelected": false,
+          "version": "13.15.0",
+          "archiveUrl": "https://dl.google.com/games/registry/unity/com.google.firebase.auth/com.google.firebase.auth-13.15.0.tgz",
+          "sha1": "804c1a308d177fa2b4e5c5579a31b3f0e13d79ef",
+          "sha256": "7724d9849e947de9c889cc265bf9f4308cc8347ca3f5b377bd7c28582fe52d83",
+          "integrity": "sha512-OVS02/SymAldfbUwSCX0sE2KHlOV8FYLsC2nW1aoqbP1x3GlP1BPEliaS/vCyRHREEg1+NzNEJ6+mX07Wrd1Dg==",
+          "dependencies": [
+            {
+              "name": "com.google.firebase.app",
+              "version": "13.15.0"
+            }
+          ]
+        },
+        {
+          "name": "com.google.firebase.database",
+          "displayName": "Realtime Database",
+          "category": "Data",
+          "description": "Synchronize JSON data in realtime.",
+          "selectable": true,
+          "defaultSelected": false,
+          "version": "13.15.0",
+          "archiveUrl": "https://dl.google.com/games/registry/unity/com.google.firebase.database/com.google.firebase.database-13.15.0.tgz",
+          "sha1": "bffef1d9521dbe8e259cc27614f732d1b899b690",
+          "sha256": "b76be8ccca7b3edf54f4f1a299e0526e48855c8482b314c85ed02714b84b5439",
+          "integrity": "sha512-TG1ZdS2rnwRHIZB4uJYA8/zlJ5pLPXd4GdBwnPnAl9FjravrL59eAUge+fBRflIU5rM+EJWMNHCCUeuE7O1URw==",
+          "dependencies": [
+            {
+              "name": "com.google.firebase.auth",
+              "version": "13.15.0"
+            }
+          ]
+        },
+        {
+          "name": "com.google.firebase.firestore",
+          "displayName": "Cloud Firestore",
+          "category": "Data",
+          "description": "Store and synchronize scalable document data.",
+          "selectable": true,
+          "defaultSelected": false,
+          "version": "13.15.0",
+          "archiveUrl": "https://dl.google.com/games/registry/unity/com.google.firebase.firestore/com.google.firebase.firestore-13.15.0.tgz",
+          "sha1": "0b0906ba1bd25226550c3467196c951662deb300",
+          "sha256": "bf4311bffe4074e33b8192af2835059122f0e2a6c7cbbcb521c5d873288d000d",
+          "integrity": "sha512-VwRNc86lvxylchY1d6T5xysJJdwzTe3kYOmyNSvMnNPU4N19nJJf+TMkwAqKUOBV4ZWEdXST74/nyjy7KUm/vg==",
+          "dependencies": [
+            {
+              "name": "com.google.firebase.app",
+              "version": "13.15.0"
+            }
+          ]
+        },
+        {
+          "name": "com.google.firebase.storage",
+          "displayName": "Cloud Storage",
+          "category": "Data",
+          "description": "Upload and download user-generated files.",
+          "selectable": true,
+          "defaultSelected": false,
+          "version": "13.15.0",
+          "archiveUrl": "https://dl.google.com/games/registry/unity/com.google.firebase.storage/com.google.firebase.storage-13.15.0.tgz",
+          "sha1": "6797e7bffaafdb0e3b8472a542d21e0134461032",
+          "sha256": "4466e5c12271f6c0bb867df38c1aeed0c19d4f9d76b71dc50d3abde1dbccf0b3",
+          "integrity": "sha512-KECk20WoHeJS8SQGkq4HFag7NHCXcKi8kuxGJtkakCvjSifc2niDbpeGCbLozXtP9T9McfcSUCihH7ckbSkXvQ==",
+          "dependencies": [
+            {
+              "name": "com.google.firebase.auth",
+              "version": "13.15.0"
+            }
+          ]
+        },
+        {
+          "name": "com.google.firebase.functions",
+          "displayName": "Cloud Functions",
+          "category": "Backend",
+          "description": "Call HTTPS callable Cloud Functions.",
+          "selectable": true,
+          "defaultSelected": false,
+          "version": "13.15.0",
+          "archiveUrl": "https://dl.google.com/games/registry/unity/com.google.firebase.functions/com.google.firebase.functions-13.15.0.tgz",
+          "sha1": "8530f7d14f5d5fee6b0a22a4a319a9427c723494",
+          "sha256": "dc5078cc0211c806360e295e7d40e61087b0180369bf65c7a61938a4337ee06f",
+          "integrity": "sha512-KoaEWRWTjCZZ9YaLeQB2V5KU3nZZkc2GsU2PGPDiZfjhd298eYmABQcAoDSdvxZz0+9s1GdEoxfRqqpQszSLDw==",
+          "dependencies": [
+            {
+              "name": "com.google.firebase.app",
+              "version": "13.15.0"
+            }
+          ]
+        },
+        {
+          "name": "com.google.firebase.installations",
+          "displayName": "Firebase Installations",
+          "category": "Foundation",
+          "description": "Internal installation identity used by Firebase products.",
+          "selectable": true,
+          "defaultSelected": false,
+          "version": "13.15.0",
+          "archiveUrl": "https://dl.google.com/games/registry/unity/com.google.firebase.installations/com.google.firebase.installations-13.15.0.tgz",
+          "sha1": "ddab930381fe3b1307e6fa7690789ccb60de9aa1",
+          "sha256": "8908c52f6a030a511d6e27ef0d408ebf04d6d022e2453c4f0e5e962b99b0d720",
+          "integrity": "sha512-1rtgPVsiIn2ewI+su69chLjbPtv4n47/Xw21ZHBeMEDP5VSSIr/ljSFpwOolR+ZVdplcidDDB+TqPMxg8Ydm+Q==",
+          "dependencies": [
+            {
+              "name": "com.google.firebase.app",
+              "version": "13.15.0"
+            }
+          ]
+        },
+        {
+          "name": "com.google.firebase.messaging",
+          "displayName": "Cloud Messaging",
+          "category": "Engagement",
+          "description": "Receive cross-platform push notifications.",
+          "selectable": true,
+          "defaultSelected": false,
+          "version": "13.15.0",
+          "archiveUrl": "https://dl.google.com/games/registry/unity/com.google.firebase.messaging/com.google.firebase.messaging-13.15.0.tgz",
+          "sha1": "3fa2cc9f474f6b5779cc291baaab083c95e8b8ee",
+          "sha256": "e91db2786d1c53b9dc4d056156d9bbbdc05c93e08beab8e9c39ee1894fc14fff",
+          "integrity": "sha512-KeARogF7RXIF8kJXjT0i6Hv7DpNPpanHFw8DPmoCA8OuosbCjyhlLDvj3bf3TBsERYfp7/p5DgVLsFX7jpWqlg==",
+          "dependencies": [
+            {
+              "name": "com.google.firebase.app",
+              "version": "13.15.0"
+            }
+          ]
+        },
+        {
+          "name": "com.google.firebase.remote-config",
+          "displayName": "Remote Config",
+          "category": "Engagement",
+          "description": "Change game behavior and values without an app update.",
+          "selectable": true,
+          "defaultSelected": true,
+          "version": "13.15.0",
+          "archiveUrl": "https://dl.google.com/games/registry/unity/com.google.firebase.remote-config/com.google.firebase.remote-config-13.15.0.tgz",
+          "sha1": "f465cdcdd94089f5cb2f434dc782c891cf92d376",
+          "sha256": "dc2ee953846f12cfe261a33d07d10873b804e37bdfebfc1c0f10dfb26b423c00",
+          "integrity": "sha512-jQNVHnWJ6D7jr5eu5WmPMnI5lt/lNgBmE+H6YXIYCZRw+1i6053EaFJKYyeXIkTljbTzt8tqFMWvvGc/32jC/g==",
+          "dependencies": [
+            {
+              "name": "com.google.firebase.app",
+              "version": "13.15.0"
+            }
+          ]
+        },
+        {
+          "name": "com.google.firebase.crashlytics",
+          "displayName": "Crashlytics",
+          "category": "Reliability",
+          "description": "Collect crash reports and diagnostics.",
+          "selectable": true,
+          "defaultSelected": false,
+          "version": "13.15.0",
+          "archiveUrl": "https://dl.google.com/games/registry/unity/com.google.firebase.crashlytics/com.google.firebase.crashlytics-13.15.0.tgz",
+          "sha1": "f7257efc615870826cbb2d22d5bdc5c1f80220ca",
+          "sha256": "75ea908481eabcb3ae004ed04179db5f4aefc5668131e27049ea0ff46a206232",
+          "integrity": "sha512-8jBUHesXltJHHxwFf2HfIQvdPe/qmLYOFuJZ94ItXM57Hy93LlAQR49c0vQ4ZkKmScZ4tjwa0yYXD196ihGSiw==",
+          "dependencies": [
+            {
+              "name": "com.google.firebase.app",
+              "version": "13.15.0"
+            }
+          ]
+        },
+        {
+          "name": "com.google.firebase.firebaseai",
+          "displayName": "Firebase AI Logic",
+          "category": "AI",
+          "description": "Use Gemini and generative AI models through Firebase.",
+          "selectable": true,
+          "defaultSelected": false,
+          "version": "13.15.0",
+          "archiveUrl": "https://dl.google.com/games/registry/unity/com.google.firebase.firebaseai/com.google.firebase.firebaseai-13.15.0.tgz",
+          "sha1": "a1a0b982a7ed2bb8362fa490d0936dee070e0d25",
+          "sha256": "aa2f09a8b3a6de190682c3918c6aed176d0e5da73316b30de507fb83f4cfd676",
+          "integrity": "sha512-SkP4iot3riFXvijltO1IN4Fa22xpj+IU0Skdm0f76yOLKSvobDN+x8c8/fVfMZ5MRzmciDK3d+NSaqJm6uu3gg==",
+          "dependencies": [
+            {
+              "name": "com.google.firebase.app",
+              "version": "13.15.0"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
