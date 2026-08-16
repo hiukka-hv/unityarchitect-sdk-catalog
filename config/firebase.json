@@ -1,0 +1,31 @@
+{
+  "provider": "firebase",
+  "releaseApiUrl": "https://api.github.com/repos/firebase/firebase-unity-sdk/releases/latest",
+  "releasePageTemplate": "https://github.com/firebase/firebase-unity-sdk/releases/tag/v{version}",
+  "archiveUrlTemplate": "https://dl.google.com/games/registry/unity/{packageName}/{packageName}-{version}.tgz",
+  "allowedHosts": [
+    "api.github.com",
+    "github.com",
+    "dl.google.com"
+  ],
+  "trackedPackages": [
+    {
+      "name": "com.google.firebase.app",
+      "dependencies": {
+        "com.google.external-dependency-manager": "1.2.186"
+      }
+    },
+    {
+      "name": "com.google.firebase.analytics",
+      "dependencies": {
+        "com.google.firebase.app": "{version}"
+      }
+    },
+    {
+      "name": "com.google.firebase.remote-config",
+      "dependencies": {
+        "com.google.firebase.app": "{version}"
+      }
+    }
+  ]
+}

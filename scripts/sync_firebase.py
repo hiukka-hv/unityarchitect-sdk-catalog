@@ -1,0 +1,277 @@
+#!/usr/bin/env python3
+"""Discover, verify, and add the latest stable Firebase Unity SDK release."""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+import sys
+import tarfile
+import tempfile
+from pathlib import Path, PurePosixPath
+from typing import Any, BinaryIO
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
+
+from validate_catalog import (
+    DEFAULT_CATALOG,
+    DEFAULT_CONFIG,
+    DEFAULT_SCHEMA,
+    ValidationError,
+    load_json,
+    resolve_dependencies,
+    validate_catalog_data,
+    validate_config,
+    validate_https_url,
+)
+
+
+MAX_ARCHIVE_BYTES = 512 * 1024 * 1024
+MAX_PACKAGE_JSON_BYTES = 1024 * 1024
+USER_AGENT = "unityarchitect-sdk-catalog/1"
+
+
+class SyncError(RuntimeError):
+    """Raised when a release cannot be safely synchronized."""
+
+
+def version_tuple(version: str) -> tuple[int, int, int]:
+    try:
+        parts = tuple(int(part) for part in version.split("."))
+    except ValueError as exc:
+        raise SyncError(f"Invalid stable version: {version!r}") from exc
+    if len(parts) != 3 or any(part < 0 for part in parts):
+        raise SyncError(f"Invalid stable version: {version!r}")
+    return parts  # type: ignore[return-value]
+
+
+def _request(url: str, allowed_hosts: set[str], accept: str) -> BinaryIO:
+    validate_https_url(url, allowed_hosts, "request URL")
+    headers = {"Accept": accept, "User-Agent": USER_AGENT}
+    token = os.environ.get("GITHUB_TOKEN")
+    if token and url.startswith("https://api.github.com/"):
+        headers["Authorization"] = f"Bearer {token}"
+        headers["X-GitHub-Api-Version"] = "2022-11-28"
+    request = Request(url, headers=headers)
+    try:
+        response = urlopen(request, timeout=60)
+    except (HTTPError, URLError, TimeoutError) as exc:
+        raise SyncError(f"Request failed for {url}: {exc}") from exc
+    try:
+        validate_https_url(response.geturl(), allowed_hosts, "redirected URL")
+    except Exception:
+        response.close()
+        raise
+    return response
+
+
+def discover_latest(config: dict[str, Any]) -> tuple[str, str]:
+    allowed_hosts = set(config["allowedHosts"])
+    with _request(
+        config["releaseApiUrl"], allowed_hosts, "application/vnd.github+json"
+    ) as response:
+        try:
+            payload = json.load(response)
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise SyncError("Release API returned invalid JSON") from exc
+    if not isinstance(payload, dict):
+        raise SyncError("Release API response must be an object")
+    if payload.get("draft") or payload.get("prerelease"):
+        raise SyncError("GitHub latest release must be stable and published")
+    tag = payload.get("tag_name")
+    if not isinstance(tag, str) or not tag.startswith("v"):
+        raise SyncError("Release tag must use the v<major>.<minor>.<patch> format")
+    version = tag[1:]
+    version_tuple(version)
+    expected_source = config["releasePageTemplate"].format(version=version)
+    if payload.get("html_url") != expected_source:
+        raise SyncError("Release page does not match the configured official source")
+    validate_https_url(expected_source, allowed_hosts, "release source")
+    return version, expected_source
+
+
+def download_archive(url: str, destination: Path, allowed_hosts: set[str]) -> str:
+    digest = hashlib.sha256()
+    total = 0
+    with _request(url, allowed_hosts, "application/octet-stream") as response:
+        with destination.open("wb") as output:
+            while True:
+                chunk = response.read(1024 * 1024)
+                if not chunk:
+                    break
+                total += len(chunk)
+                if total > MAX_ARCHIVE_BYTES:
+                    raise SyncError(f"Archive exceeds {MAX_ARCHIVE_BYTES} bytes: {url}")
+                digest.update(chunk)
+                output.write(chunk)
+    if total == 0:
+        raise SyncError(f"Downloaded archive is empty: {url}")
+    return digest.hexdigest()
+
+
+def inspect_archive(path: Path, expected_name: str, version: str) -> dict[str, str]:
+    try:
+        with tarfile.open(path, mode="r:gz") as archive:
+            matches = [
+                member
+                for member in archive.getmembers()
+                if PurePosixPath(member.name) == PurePosixPath("package/package.json")
+            ]
+            if len(matches) != 1 or not matches[0].isfile():
+                raise SyncError(
+                    f"{expected_name}: archive must contain one package/package.json"
+                )
+            member = matches[0]
+            if member.size > MAX_PACKAGE_JSON_BYTES:
+                raise SyncError(f"{expected_name}: package/package.json is too large")
+            handle = archive.extractfile(member)
+            if handle is None:
+                raise SyncError(f"{expected_name}: cannot read package/package.json")
+            raw = handle.read(MAX_PACKAGE_JSON_BYTES + 1)
+    except (tarfile.TarError, OSError) as exc:
+        raise SyncError(f"{expected_name}: invalid tgz archive: {exc}") from exc
+    try:
+        metadata = json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise SyncError(f"{expected_name}: invalid package/package.json") from exc
+    if not isinstance(metadata, dict):
+        raise SyncError(f"{expected_name}: package metadata must be an object")
+    if metadata.get("name") != expected_name:
+        raise SyncError(
+            f"Archive name mismatch: expected {expected_name}, got {metadata.get('name')!r}"
+        )
+    if metadata.get("version") != version:
+        raise SyncError(
+            f"{expected_name}: expected version {version}, got {metadata.get('version')!r}"
+        )
+    dependencies = metadata.get("dependencies", {})
+    if not isinstance(dependencies, dict) or any(
+        not isinstance(name, str) or not isinstance(value, str)
+        for name, value in dependencies.items()
+    ):
+        raise SyncError(f"{expected_name}: dependencies must be a string map")
+    for dependency, dependency_version in dependencies.items():
+        if dependency.startswith("com.google.firebase.") and dependency_version != version:
+            raise SyncError(
+                f"{expected_name}: Firebase dependency {dependency} must use {version}"
+            )
+    return dict(dependencies)
+
+
+def build_release(
+    config: dict[str, Any], version: str, source: str
+) -> dict[str, Any]:
+    allowed_hosts = set(config["allowedHosts"])
+    packages: list[dict[str, Any]] = []
+    with tempfile.TemporaryDirectory(prefix="firebase-catalog-") as temp_dir:
+        temp_root = Path(temp_dir)
+        for package_config in config["trackedPackages"]:
+            name = package_config["name"]
+            url = config["archiveUrlTemplate"].format(
+                packageName=name, version=version
+            )
+            validate_https_url(url, allowed_hosts, f"archive URL for {name}")
+            archive_path = temp_root / f"{name}-{version}.tgz"
+            sha256 = download_archive(url, archive_path, allowed_hosts)
+            dependencies = inspect_archive(archive_path, name, version)
+            expected_dependencies = resolve_dependencies(package_config, version)
+            if dependencies != expected_dependencies:
+                raise SyncError(
+                    f"{name}: archive dependencies {dependencies!r} do not match "
+                    f"configured dependencies {expected_dependencies!r}"
+                )
+            packages.append(
+                {
+                    "name": name,
+                    "archiveUrl": url,
+                    "sha256": sha256,
+                    "dependencies": dependencies,
+                }
+            )
+    return {"source": source, "packages": packages}
+
+
+def apply_release(
+    catalog: dict[str, Any], version: str, release: dict[str, Any]
+) -> bool:
+    before = json.dumps(catalog, sort_keys=True)
+    catalog["releases"][version] = release
+    catalog["releases"] = dict(
+        sorted(catalog["releases"].items(), key=lambda item: version_tuple(item[0]))
+    )
+    catalog["latestVersion"] = version
+    return before != json.dumps(catalog, sort_keys=True)
+
+
+def write_json_atomic(path: Path, value: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, temporary_name = tempfile.mkstemp(
+        prefix=f".{path.name}.", suffix=".tmp", dir=path.parent
+    )
+    temporary_path = Path(temporary_name)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8", newline="\n") as handle:
+            json.dump(value, handle, indent=2, ensure_ascii=False)
+            handle.write("\n")
+        os.replace(temporary_path, path)
+    finally:
+        temporary_path.unlink(missing_ok=True)
+
+
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
+    parser.add_argument("--catalog", type=Path, default=DEFAULT_CATALOG)
+    parser.add_argument("--schema", type=Path, default=DEFAULT_SCHEMA)
+    parser.add_argument(
+        "--version",
+        help="Verify a specific stable version instead of querying GitHub latest",
+    )
+    return parser.parse_args(argv)
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = parse_args(argv)
+    try:
+        config = load_json(args.config)
+        catalog = load_json(args.catalog)
+        schema = load_json(args.schema)
+        validate_config(config)
+        validate_catalog_data(catalog, config, schema)
+        if args.version:
+            version_tuple(args.version)
+            version = args.version
+            source = config["releasePageTemplate"].format(version=version)
+        else:
+            version, source = discover_latest(config)
+
+        current = catalog["latestVersion"]
+        if version_tuple(version) < version_tuple(current):
+            raise SyncError(
+                f"Discovered version {version} is older than catalog latest {current}"
+            )
+        if version == current and version in catalog["releases"]:
+            print(f"Catalog is already current at Firebase {version}")
+            return 0
+
+        release = build_release(config, version, source)
+        changed = apply_release(catalog, version, release)
+        validate_catalog_data(catalog, config, schema)
+        if changed:
+            write_json_atomic(args.catalog, catalog)
+            print(
+                f"Updated latestVersion to Firebase {version}; "
+                f"recommendedVersion remains {catalog['recommendedVersion']}"
+            )
+        else:
+            print(f"No catalog changes for Firebase {version}")
+        return 0
+    except (ValidationError, SyncError, OSError) as exc:
+        print(f"Firebase sync failed: {exc}", file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
