@@ -3,7 +3,7 @@
   "name": "com.google.firebase.storage",
   "description": "Upload and download user-generated files.",
   "dist-tags": {
-    "latest": "13.15.0",
+    "latest": "13.16.0",
     "recommended": "13.15.0"
   },
   "versions": {
@@ -20,6 +20,21 @@
         "tarball": "https://dl.google.com/games/registry/unity/com.google.firebase.storage/com.google.firebase.storage-13.15.0.tgz",
         "shasum": "6797e7bffaafdb0e3b8472a542d21e0134461032",
         "integrity": "sha512-KECk20WoHeJS8SQGkq4HFag7NHCXcKi8kuxGJtkakCvjSifc2niDbpeGCbLozXtP9T9McfcSUCihH7ckbSkXvQ=="
+      }
+    },
+    "13.16.0": {
+      "_id": "com.google.firebase.storage@13.16.0",
+      "name": "com.google.firebase.storage",
+      "version": "13.16.0",
+      "displayName": "Cloud Storage",
+      "description": "Upload and download user-generated files.",
+      "dependencies": {
+        "com.google.firebase.auth": "13.16.0"
+      },
+      "dist": {
+        "tarball": "https://dl.google.com/games/registry/unity/com.google.firebase.storage/com.google.firebase.storage-13.16.0.tgz",
+        "shasum": "d9497bd464b918fd1cc284eb3d05698171dcfe47",
+        "integrity": "sha512-i5pvPVuEMro/US8zMAGAEuhPWlmfQz1SHakBmKwDTw5ArMf2O8qcyG2IKGJqRo5cQo4PDXIyIhKTzKV9+JRgLw=="
       }
     }
   }

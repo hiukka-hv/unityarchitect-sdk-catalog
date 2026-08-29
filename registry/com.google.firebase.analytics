@@ -3,7 +3,7 @@
   "name": "com.google.firebase.analytics",
   "description": "Measure events, audiences, and user behavior.",
   "dist-tags": {
-    "latest": "13.15.0",
+    "latest": "13.16.0",
     "recommended": "13.15.0"
   },
   "versions": {
@@ -20,6 +20,21 @@
         "tarball": "https://dl.google.com/games/registry/unity/com.google.firebase.analytics/com.google.firebase.analytics-13.15.0.tgz",
         "shasum": "cc21622cdf8cf1231f1546831937cb8e78368044",
         "integrity": "sha512-PQoHQL5wvV/LasxqRvNWFSdhogz5D+DfLqaLstYPnlg3iG4OrKtu9NSsrAVNOqmiEhsoduXWmgldVjkSmneh8w=="
+      }
+    },
+    "13.16.0": {
+      "_id": "com.google.firebase.analytics@13.16.0",
+      "name": "com.google.firebase.analytics",
+      "version": "13.16.0",
+      "displayName": "Analytics",
+      "description": "Measure events, audiences, and user behavior.",
+      "dependencies": {
+        "com.google.firebase.app": "13.16.0"
+      },
+      "dist": {
+        "tarball": "https://dl.google.com/games/registry/unity/com.google.firebase.analytics/com.google.firebase.analytics-13.16.0.tgz",
+        "shasum": "00037ebf66d0566cea9ae5ad9fc54279ae112a2d",
+        "integrity": "sha512-WGOdAGmcvfNMEtqsfn1xfKsP3B6/XeACiR8ctyiIfZo5bJAPrtf+QKWyLXi0oahJI79C1lcTk6GHTiziwFrkiQ=="
       }
     }
   }
