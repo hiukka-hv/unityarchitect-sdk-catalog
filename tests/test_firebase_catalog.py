@@ -27,10 +27,13 @@ class CatalogValidationTests(unittest.TestCase):
     def test_repository_catalog_and_embedded_manifest_are_valid(self) -> None:
         validate_catalog.validate_repository()
 
-    def test_initial_versions_and_all_official_modules(self) -> None:
-        self.assertEqual("13.15.0", self.catalog["latestVersion"])
-        self.assertEqual("13.15.0", self.catalog["recommendedVersion"])
-        packages = self.catalog["releases"]["13.15.0"]["packages"]
+    def test_version_pointers_and_all_official_modules(self) -> None:
+        releases = self.catalog["releases"]
+        latest = self.catalog["latestVersion"]
+        recommended = self.catalog["recommendedVersion"]
+        self.assertIn(latest, releases)
+        self.assertIn(recommended, releases)
+        packages = releases[latest]["packages"]
         configured = [
             *self.config["supportPackages"],
             *self.config["trackedPackages"],
@@ -121,15 +124,19 @@ class CatalogValidationTests(unittest.TestCase):
         metadata = validate_catalog.load_json(
             validate_catalog.DEFAULT_REGISTRY / "com.google.firebase.analytics"
         )
-        self.assertEqual("13.15.0", metadata["dist-tags"]["latest"])
-        package = metadata["versions"]["13.15.0"]
+        latest = self.catalog["latestVersion"]
+        recommended = self.catalog["recommendedVersion"]
+        self.assertEqual(latest, metadata["dist-tags"]["latest"])
+        self.assertEqual(recommended, metadata["dist-tags"]["recommended"])
+        self.assertIn(recommended, metadata["versions"])
+        package = metadata["versions"][latest]
         self.assertEqual(
-            {"com.google.firebase.app": "13.15.0"}, package["dependencies"]
+            {"com.google.firebase.app": latest}, package["dependencies"]
         )
         self.assertEqual(
             "https://dl.google.com/games/registry/unity/"
             "com.google.firebase.analytics/"
-            "com.google.firebase.analytics-13.15.0.tgz",
+            f"com.google.firebase.analytics-{latest}.tgz",
             package["dist"]["tarball"],
         )
         self.assertRegex(package["dist"]["shasum"], r"^[0-9a-f]{40}$")
