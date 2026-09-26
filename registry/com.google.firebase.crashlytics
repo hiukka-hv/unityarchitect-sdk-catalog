@@ -3,7 +3,7 @@
   "name": "com.google.firebase.crashlytics",
   "description": "Collect crash reports and diagnostics.",
   "dist-tags": {
-    "latest": "13.16.0",
+    "latest": "13.17.0",
     "recommended": "13.15.0"
   },
   "versions": {
@@ -35,6 +35,21 @@
         "tarball": "https://dl.google.com/games/registry/unity/com.google.firebase.crashlytics/com.google.firebase.crashlytics-13.16.0.tgz",
         "shasum": "15e949d541b5daf9a5234180d0d8f9eb40ba52de",
         "integrity": "sha512-yXdLZNJWJBkEji38iUWRHihMej2s/703Q13qkNf3VR7eLa/m0sqWh5wWnThhO1EhWrcoJfVQ7TIEFAO51WngvQ=="
+      }
+    },
+    "13.17.0": {
+      "_id": "com.google.firebase.crashlytics@13.17.0",
+      "name": "com.google.firebase.crashlytics",
+      "version": "13.17.0",
+      "displayName": "Crashlytics",
+      "description": "Collect crash reports and diagnostics.",
+      "dependencies": {
+        "com.google.firebase.app": "13.17.0"
+      },
+      "dist": {
+        "tarball": "https://dl.google.com/games/registry/unity/com.google.firebase.crashlytics/com.google.firebase.crashlytics-13.17.0.tgz",
+        "shasum": "33a85b8a3ad8f050e12c8047110baa431a6d87d9",
+        "integrity": "sha512-6cW1s9S2bBjOatsTcgohnFxoWG8FEKiBHd7EQ/8Fwk4IdRLeW0AMyG+KctmA5LpLkyYZ5Oidsl2qfLfNOYUXhA=="
       }
     }
   }
