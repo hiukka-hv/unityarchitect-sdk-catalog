@@ -3,7 +3,7 @@
   "name": "com.google.firebase.functions",
   "description": "Call HTTPS callable Cloud Functions.",
   "dist-tags": {
-    "latest": "13.16.0",
+    "latest": "13.17.0",
     "recommended": "13.15.0"
   },
   "versions": {
@@ -35,6 +35,21 @@
         "tarball": "https://dl.google.com/games/registry/unity/com.google.firebase.functions/com.google.firebase.functions-13.16.0.tgz",
         "shasum": "3c49072513e294dd261f31d561a9493397301630",
         "integrity": "sha512-3zWxmnOESdZ61cYCFyDP42+K/5EAqPzAZ//0YlV0F0q4KyWssD5tk74Z2AUn6Du/t8XH/Zlt/L0MYVNeGmY69w=="
+      }
+    },
+    "13.17.0": {
+      "_id": "com.google.firebase.functions@13.17.0",
+      "name": "com.google.firebase.functions",
+      "version": "13.17.0",
+      "displayName": "Cloud Functions",
+      "description": "Call HTTPS callable Cloud Functions.",
+      "dependencies": {
+        "com.google.firebase.app": "13.17.0"
+      },
+      "dist": {
+        "tarball": "https://dl.google.com/games/registry/unity/com.google.firebase.functions/com.google.firebase.functions-13.17.0.tgz",
+        "shasum": "6837a42990ccfad7b9d4f3b10487ff8f50cf1f44",
+        "integrity": "sha512-OV3ODkBNR4mrfO82x6b6ZIpsF6MGKLWu350cp2PDNS1F0VOVqlKPaxdlUnULlhmd059iwpXfMx799PRF5koYyQ=="
       }
     }
   }

@@ -3,7 +3,7 @@
   "name": "com.google.firebase.app-check",
   "description": "Protect backend resources from unauthorized clients.",
   "dist-tags": {
-    "latest": "13.16.0",
+    "latest": "13.17.0",
     "recommended": "13.15.0"
   },
   "versions": {
@@ -35,6 +35,21 @@
         "tarball": "https://dl.google.com/games/registry/unity/com.google.firebase.app-check/com.google.firebase.app-check-13.16.0.tgz",
         "shasum": "d657e8ca4b9d3af7e97f18305895bd7e5a03810d",
         "integrity": "sha512-W51tNPGKjk95/lIyTxZsDH6upSwt9nV2YmF2N9Tn2OXC1wEq/RfvUZyzLOoSx4avzK4KSzr6JqMaJ6YHzbZ4Kg=="
+      }
+    },
+    "13.17.0": {
+      "_id": "com.google.firebase.app-check@13.17.0",
+      "name": "com.google.firebase.app-check",
+      "version": "13.17.0",
+      "displayName": "App Check",
+      "description": "Protect backend resources from unauthorized clients.",
+      "dependencies": {
+        "com.google.firebase.app": "13.17.0"
+      },
+      "dist": {
+        "tarball": "https://dl.google.com/games/registry/unity/com.google.firebase.app-check/com.google.firebase.app-check-13.17.0.tgz",
+        "shasum": "9f0772262cfb69f54f88be9aeeb2ffe4187ec418",
+        "integrity": "sha512-Z0iFaBMRXwpCW8CJTnK6LA/rK3P9DdRin1iupuumD9QJj+53AlIsW8tQTkUpfKEFbeveTK4RFmaim2HANYX8AQ=="
       }
     }
   }
