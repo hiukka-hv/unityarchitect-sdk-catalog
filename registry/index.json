@@ -5,7 +5,7 @@
     "com.google.firebase",
     "com.google.external-dependency-manager"
   ],
-  "latestFirebaseVersion": "13.16.0",
+  "latestFirebaseVersion": "13.17.0",
   "recommendedFirebaseVersion": "13.15.0",
   "packages": [
     {
