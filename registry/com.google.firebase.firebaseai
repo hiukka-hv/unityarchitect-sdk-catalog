@@ -3,7 +3,7 @@
   "name": "com.google.firebase.firebaseai",
   "description": "Use Gemini and generative AI models through Firebase.",
   "dist-tags": {
-    "latest": "13.16.0",
+    "latest": "14.0.0",
     "recommended": "13.15.0"
   },
   "versions": {
@@ -35,6 +35,21 @@
         "tarball": "https://dl.google.com/games/registry/unity/com.google.firebase.firebaseai/com.google.firebase.firebaseai-13.16.0.tgz",
         "shasum": "8ae943e72281e9dfbbd5b196935492487348f884",
         "integrity": "sha512-QuSnbi866s8d32JpeYiIHlhn2pD2GVMqnSMmP7Pu3Bix6AnvLj3fp9Jk7/M4L+uMqEEM/Bn13clqfX2kHiMoeg=="
+      }
+    },
+    "14.0.0": {
+      "_id": "com.google.firebase.firebaseai@14.0.0",
+      "name": "com.google.firebase.firebaseai",
+      "version": "14.0.0",
+      "displayName": "Firebase AI Logic",
+      "description": "Use Gemini and generative AI models through Firebase.",
+      "dependencies": {
+        "com.google.firebase.app": "14.0.0"
+      },
+      "dist": {
+        "tarball": "https://dl.google.com/games/registry/unity/com.google.firebase.firebaseai/com.google.firebase.firebaseai-14.0.0.tgz",
+        "shasum": "58290a5957372994fb6f84fe4fe25cf9586c1cef",
+        "integrity": "sha512-XMAFAvKYdL834TGZw/zLtSfrMrJMytm2WmW4R/M5U1rz8Dd36QLw8Xqcj0w05ND+615GsuengPK5KyzQZzbH9g=="
       }
     }
   }

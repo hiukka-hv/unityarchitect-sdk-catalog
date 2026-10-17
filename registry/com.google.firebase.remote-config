@@ -3,7 +3,7 @@
   "name": "com.google.firebase.remote-config",
   "description": "Change game behavior and values without an app update.",
   "dist-tags": {
-    "latest": "13.16.0",
+    "latest": "14.0.0",
     "recommended": "13.15.0"
   },
   "versions": {
@@ -35,6 +35,21 @@
         "tarball": "https://dl.google.com/games/registry/unity/com.google.firebase.remote-config/com.google.firebase.remote-config-13.16.0.tgz",
         "shasum": "16fb4e6000976e9aa04d750e999514130473a77d",
         "integrity": "sha512-VVRJWGnAofVmnXnH2KOAHwpGVAR3kJb/NlBNg2+nV5Fqu8UUVXwNyeo642RkUSHpq2oQE5zmhBxDRU/zdwvP1A=="
+      }
+    },
+    "14.0.0": {
+      "_id": "com.google.firebase.remote-config@14.0.0",
+      "name": "com.google.firebase.remote-config",
+      "version": "14.0.0",
+      "displayName": "Remote Config",
+      "description": "Change game behavior and values without an app update.",
+      "dependencies": {
+        "com.google.firebase.app": "14.0.0"
+      },
+      "dist": {
+        "tarball": "https://dl.google.com/games/registry/unity/com.google.firebase.remote-config/com.google.firebase.remote-config-14.0.0.tgz",
+        "shasum": "bc10d7d2de527c68dab2dab04217ba636c80b0b6",
+        "integrity": "sha512-iKExC9S1fbz0R+bTt5Ff3SeW6P1XCdFVn28TgUPnB3pD0NNcbD0UA5Bhx55rLM3HJ1tgyFx7/2pyNUPjeeTDWA=="
       }
     }
   }

@@ -3,7 +3,7 @@
   "name": "com.google.firebase.app",
   "description": "Required Firebase initialization and shared runtime.",
   "dist-tags": {
-    "latest": "13.16.0",
+    "latest": "14.0.0",
     "recommended": "13.15.0"
   },
   "versions": {
@@ -35,6 +35,21 @@
         "tarball": "https://dl.google.com/games/registry/unity/com.google.firebase.app/com.google.firebase.app-13.16.0.tgz",
         "shasum": "92cd5782e320f6e5403f7647d2c2cd04543cc549",
         "integrity": "sha512-H9pqd1U/KJIwJrXpBayaGaIb8J5tONa3QJWkMs6g+tMlHvNmwqhS8TD5I4zgA4RokH2KdAC/+DUWUHnbpPi1Pg=="
+      }
+    },
+    "14.0.0": {
+      "_id": "com.google.firebase.app@14.0.0",
+      "name": "com.google.firebase.app",
+      "version": "14.0.0",
+      "displayName": "Firebase App (Core)",
+      "description": "Required Firebase initialization and shared runtime.",
+      "dependencies": {
+        "com.google.external-dependency-manager": "1.2.190"
+      },
+      "dist": {
+        "tarball": "https://dl.google.com/games/registry/unity/com.google.firebase.app/com.google.firebase.app-14.0.0.tgz",
+        "shasum": "61c34e22601438ac9751f5a310460a4ed51b8a57",
+        "integrity": "sha512-pHhnNUX1X9sMouON42oVYE/oNwrSEPmF3pJEv7sc9EpRNGFRyhRMgQm4OhNbxbj0ePCr2t/HdQgzPTKGCI6yVg=="
       }
     }
   }
