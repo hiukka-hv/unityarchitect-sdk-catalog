@@ -3,7 +3,7 @@
   "name": "com.google.firebase.auth",
   "description": "Sign users in with Firebase Authentication providers.",
   "dist-tags": {
-    "latest": "13.16.0",
+    "latest": "14.1.0",
     "recommended": "13.15.0"
   },
   "versions": {
@@ -35,6 +35,21 @@
         "tarball": "https://dl.google.com/games/registry/unity/com.google.firebase.auth/com.google.firebase.auth-13.16.0.tgz",
         "shasum": "f20c2f1d48ed63ddd51dd11cb1a7c711492a028e",
         "integrity": "sha512-j6TwORrCZYT72dSzeOVNAnsO7sRG5HAEqnMj8gSbbhTXWFbSG1GJVSxXPIL9GykXNdtBfmd6wh3vkFSuGCkWFA=="
+      }
+    },
+    "14.1.0": {
+      "_id": "com.google.firebase.auth@14.1.0",
+      "name": "com.google.firebase.auth",
+      "version": "14.1.0",
+      "displayName": "Authentication",
+      "description": "Sign users in with Firebase Authentication providers.",
+      "dependencies": {
+        "com.google.firebase.app": "14.1.0"
+      },
+      "dist": {
+        "tarball": "https://dl.google.com/games/registry/unity/com.google.firebase.auth/com.google.firebase.auth-14.1.0.tgz",
+        "shasum": "d8ec380c93b89aa595727021b744885bfb2cf8a8",
+        "integrity": "sha512-trLcMc6GbH+lidaXT7RGAFeDW3yLTmkOJhTbcyTOTk8wFXVO7NrS/VbfaEbDM9Vc3ww867zyeOkXw2ok5YZLTQ=="
       }
     }
   }
