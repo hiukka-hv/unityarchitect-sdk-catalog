@@ -3,7 +3,7 @@
   "name": "com.google.firebase.firestore",
   "description": "Store and synchronize scalable document data.",
   "dist-tags": {
-    "latest": "13.16.0",
+    "latest": "14.2.0",
     "recommended": "13.15.0"
   },
   "versions": {
@@ -35,6 +35,21 @@
         "tarball": "https://dl.google.com/games/registry/unity/com.google.firebase.firestore/com.google.firebase.firestore-13.16.0.tgz",
         "shasum": "b74f500414aa45ee6a5eb36b4887976a7d92838c",
         "integrity": "sha512-fmEBZuiaNfUrRtMbqxX7zQcgh6ZAlLR0rumDVIPjcWCwAltq7srlH0sCExL0plwp4Jf99D/TA+nBOVF6KcqZdA=="
+      }
+    },
+    "14.2.0": {
+      "_id": "com.google.firebase.firestore@14.2.0",
+      "name": "com.google.firebase.firestore",
+      "version": "14.2.0",
+      "displayName": "Cloud Firestore",
+      "description": "Store and synchronize scalable document data.",
+      "dependencies": {
+        "com.google.firebase.app": "14.2.0"
+      },
+      "dist": {
+        "tarball": "https://dl.google.com/games/registry/unity/com.google.firebase.firestore/com.google.firebase.firestore-14.2.0.tgz",
+        "shasum": "8cda12ad084476993424bc1085e0615af1fd14b4",
+        "integrity": "sha512-Xd+NPXUTNPkNk+DR+cxdbHYjIf9ks8FfYCf6P+YjtZCgG7aNvLuZtPe7rsQZvi0EnTo7WjnhBir25je9/6oBDA=="
       }
     }
   }
